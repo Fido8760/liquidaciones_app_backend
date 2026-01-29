@@ -10,61 +10,85 @@ import { DeduccionFlete } from 'src/deduccion-flete/entities/deduccion-flete.ent
 import { Anticipo } from 'src/anticipos/entities/anticipo.entity'
 import { User } from 'src/users/entities/user.entity'
 import { Nota } from 'src/nota/entities/nota.entity'
+import { ResultadoRendimiento } from '../enums/resultado-rendimiento.enum'
 
 @Entity('liquidaciones')
 export class Liquidacion {
     @PrimaryGeneratedColumn()
-    id: number
-
+    id: number;
+    
     @ManyToOne(() => Unidad, (unidad) => unidad.liquidaciones, { nullable: false})
-    unidad: Unidad
+    unidad: Unidad;
     
     @ManyToOne(() => Operador, (operador) => operador.liquidaciones, { nullable: false})
-    operador: Operador
+    operador: Operador;
+    
+    @Column({ type: 'varchar', length: 120 })
+    folio_liquidacion: string;
+    
+    @Column({ type: 'varchar', length: 120 })
+    cliente: string;
 
     @Column({ type: 'date'})
-    fecha_fin: Date
+    fecha_inicio: Date;
 
     @Column({ type: 'date'})
-    fecha_llegada: Date
+    fecha_fin: Date;
 
     @Column({ type: 'date'})
-    fecha_inicio: Date
+    fecha_llegada: Date;
+    
+    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+    kilometros_recorridos: number;
+    
+    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+    rendimiento_tabulado: number;
+    
+    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+    rendimiento_real: number;
+    
+    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0})
+    diesel_a_favor_sin_iva: number;
+    
+    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0})
+    diesel_en_contra_sin_iva: number;
+    
+    @Column({ type: 'enum', enum: ResultadoRendimiento, default: ResultadoRendimiento.FAVOR })
+    resultado_rendimiento: ResultadoRendimiento;
+    
+    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, nullable: false })
+    total_costo_fletes: number;
+    
+    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, nullable: false })
+    total_combustible: number;
 
-    @Column({ type: 'decimal', precision: 10, scale: 2 })
-    rendimiento: number
-
-    @Column({ type: 'decimal', precision: 10, scale: 2 })
-    rendimiento_ajustado: number
+    @Column({ type: 'decimal', precision: 5, scale: 2, default: 0, nullable: false })
+    comision_porcentaje: number;
 
     @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-    kilometros_recorridos: number
+    comision_estimada: number;
 
-    @Column({ type: 'varchar', length: 120 })
-    cliente: string
-
-    @Column({ type: 'varchar', length: 120 })
-    folio_liquidacion: string
-
-    @Column({
-        type: 'enum',                
-        enum: EstadoLiquidacion,      
-        default: EstadoLiquidacion.BORRADOR
-    })
+    @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+    comision_pagada: number | null;
+    
+    @Column({ type: 'enum', enum: EstadoLiquidacion, default: EstadoLiquidacion.BORRADOR })
     estado: EstadoLiquidacion;
-
+    
     @CreateDateColumn()
     createdAt: Date;
-
+    
     @UpdateDateColumn()
     updatedAt: Date;
-
+    
+    @DeleteDateColumn()
+    deletedAt: Date;
+    
     @OneToMany(() => GastoCombustible, (gastos_combustible) => gastos_combustible.liquidacion, { cascade: true })
-    gastos_combustible: GastoCombustible[]
+    gastos_combustible: GastoCombustible[];
 
     @OneToMany(() => GastoCaseta, (gastos_caseta) => gastos_caseta.liquidacion, { cascade: true })
-    gastos_caseta: GastoCaseta[]
-
+    gastos_caseta: GastoCaseta[];
+    
     @OneToMany(() => GastoVario, (gastos_varios) => gastos_varios.liquidacion, { cascade: true })
     gastos_varios: GastoVario[];
 
@@ -72,25 +96,16 @@ export class Liquidacion {
     costos_fletes: CostoFlete[];
 
     @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, nullable: false })
-    total_combustible: number;
-    
-    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, nullable: false })
     total_casetas: number;
     
     @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, nullable: false })
     total_gastos_varios: number;
     
     @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, nullable: false })
-    total_costo_fletes: number;
-
-    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, nullable: false })
     total_bruto: number;
     
     @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, nullable: false })
     total_deducciones_comerciales: number;
-    
-    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, nullable: false })
-    comision_porcentaje: number;
     
     @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, nullable: false })
     total_neto_pagar: number;
@@ -124,9 +139,6 @@ export class Liquidacion {
 
     @Column({ type: 'timestamp', nullable: true })
     fecha_pago: Date | null;
-
-    @DeleteDateColumn()
-    deletedAt: Date
 
     @OneToMany(() => Nota, (nota) => nota.liquidacion, { cascade: true })
     notas: Nota[];

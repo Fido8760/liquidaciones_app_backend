@@ -42,7 +42,7 @@ export class DeduccionFleteService {
   
       const saved = await manager.save(DeduccionFlete, deduccion)
 
-      await this.liquidacionesService.recalcularTotalesConManager( manager, liquidacion.id, user )
+      await this.liquidacionesService.recalcularTotales( liquidacion.id, user, manager )
       await this.liquidacionesService.pasarARevisionSiBorradorConManager(manager, liquidacion.id, user)
       return saved
     }) 
@@ -103,7 +103,7 @@ export class DeduccionFleteService {
       const liquidacionId = deduccion.liquidacion.id;
   
       const saved = await manager.save(DeduccionFlete, deduccion);
-      await this.liquidacionesService.recalcularTotalesConManager(manager, liquidacionId, user);
+      await this.liquidacionesService.recalcularTotales( liquidacionId, user, manager);
       return saved
     })
   }
@@ -125,7 +125,7 @@ export class DeduccionFleteService {
 
       const liquidacionId = deduccion.liquidacion.id;
       await manager.remove(DeduccionFlete, deduccion);
-      await this.liquidacionesService.recalcularTotalesConManager(manager, liquidacionId, user);
+      await this.liquidacionesService.recalcularTotales(liquidacionId, user, manager);
       return { message: "Gasto Eliminado"}
       
     })

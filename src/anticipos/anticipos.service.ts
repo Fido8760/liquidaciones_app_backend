@@ -41,7 +41,7 @@ export class AnticiposService {
       })
   
       const saved = await manager.save(Anticipo, anticipo)
-      await this.liquidacionesService.recalcularTotalesConManager( manager, liquidacion.id, user)
+      await this.liquidacionesService.recalcularTotales( liquidacion.id, user, manager )
       await this.liquidacionesService.pasarARevisionSiBorradorConManager(manager, liquidacion.id, user)
       return saved
     })
@@ -105,7 +105,7 @@ export class AnticiposService {
 
       const liquidacionId = anticipo.liquidacion.id;
       const saved = await manager.save(Anticipo, anticipo)
-      await this.liquidacionesService.recalcularTotalesConManager(manager, liquidacionId, user);
+      await this.liquidacionesService.recalcularTotales( liquidacionId, user, manager );
       return saved
     })
 
@@ -131,7 +131,7 @@ export class AnticiposService {
       const liquidacionId = anticipo.liquidacion.id;
 
       await manager.remove(Anticipo, anticipo)
-      await this.liquidacionesService.recalcularTotalesConManager(manager, liquidacionId, user);
+      await this.liquidacionesService.recalcularTotales(liquidacionId, user, manager);
       return { manager: "Anticipo Eliminado" }
     })
   }

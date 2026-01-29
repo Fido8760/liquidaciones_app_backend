@@ -1,10 +1,11 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString, Max, MaxLength, Min, ValidateIf } from 'class-validator';
 
 export class AjustarLiquidacionDto {
+  
   @IsNumber({}, { message: 'El rendimiento ajustado debe ser un número.' })
   @Min(0, { message: 'El rendimiento ajustado no puede ser negativo.' })
   @IsNotEmpty({ message: 'El rendimiento ajustado es obligatorio.' })
-  rendimiento_ajustado: number;
+  rendimiento_tabulado: number;
 
   @IsNumber({}, { message: 'El porcentaje de comisión debe ser un número.' })
   @Min(0, { message: 'El porcentaje de comisión no puede ser negativo.' })
@@ -22,4 +23,5 @@ export class AjustarLiquidacionDto {
   @ValidateIf(o => o.ajuste_manual && o.ajuste_manual !== 0)
   @IsNotEmpty({ message: 'Debe proporcionar un motivo cuando hay un ajuste manual.' })
   motivo_ajuste?: string;
+
 }

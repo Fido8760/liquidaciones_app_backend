@@ -39,7 +39,7 @@ export class CostoFletesService {
       })
   
       const saved = await manager.save(costo)
-      await this.liquidacionesService.recalcularTotalesConManager(manager, liquidacion.id)
+      await this.liquidacionesService.recalcularTotales( liquidacion.id, user, manager)
       await this.liquidacionesService.pasarARevisionSiBorradorConManager(manager, liquidacion.id, user)
       
       return saved
@@ -100,7 +100,7 @@ export class CostoFletesService {
 
     const liquidacionId = costoFlete.liquidacion.id;
     const saved = await manager.save(CostoFlete, costoFlete);
-    await this.liquidacionesService.recalcularTotalesConManager(manager, liquidacionId, user);
+    await this.liquidacionesService.recalcularTotales( liquidacionId, user, manager);
 
     return saved
     
@@ -122,9 +122,11 @@ export class CostoFletesService {
       if(!costoFlete) {
         throw new NotFoundException(`El costo del flete con ID ${id} no existe`)
       }
+
       validarBloqueoEdicion(costoFlete.liquidacion, user);
+      const liquidacionId = costoFlete.liquidacion.id;
       await manager.remove(CostoFlete,costoFlete)
-      await this.liquidacionesService.recalcularTotalesConManager(manager, costoFlete.liquidacion.id, user)
+      await this.liquidacionesService.recalcularTotales( liquidacionId, user, manager)
   
       return { message: `Flete Eliminado` };
       

@@ -9,6 +9,16 @@ export class CreateCostoFleteDto {
     @Type(() => Number)
     monto: number
 
+    @IsOptional()
+    @IsString({ message: 'El origen debe ser texto' })
+    @MaxLength(255, { message: 'el mensaje no puede tener más de 255 caracteres' })
+    origen?: string
+    
+    @IsOptional()
+    @IsString({ message: 'El origen debe ser texto' })
+    @MaxLength(255, { message: 'el mensaje no puede tener más de 255 caracteres' })
+    destino?: string
+
     @IsString()
     @MaxLength(255)
     @IsOptional()

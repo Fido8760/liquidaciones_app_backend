@@ -9,6 +9,12 @@ export class CostoFlete {
     @Column({ type: 'decimal', precision: 10, scale: 2 })
     monto: number
 
+    @Column({ type: 'varchar', length: 255, nullable: true})
+    origen: string | null;
+
+    @Column({ type: 'varchar', length: 255, nullable: true})
+    destino: string | null;
+
     @Column({ type: 'varchar', length: 120, nullable: true })
     descripcion: string
 

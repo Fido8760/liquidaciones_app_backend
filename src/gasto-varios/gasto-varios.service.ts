@@ -50,7 +50,7 @@ export class GastoVariosService {
       });
   
       const saved = await manager.save(GastoVario, gasto)
-      await this.liquidacionesService.recalcularTotalesConManager(manager, liquidacion.id, user)
+      await this.liquidacionesService.recalcularTotales(liquidacion.id, user, manager)
       await this.liquidacionesService.pasarARevisionSiBorradorConManager(manager, liquidacion.id, user)
       return saved
     });
@@ -117,7 +117,7 @@ async update(id: number, updateGastoVarioDto: UpdateGastoVarioDto, user: User,fi
     
       const liquidacionId = gastoVario.liquidacion.id;
       const saved = await manager.save(GastoVario, gastoVario);
-      await this.liquidacionesService.recalcularTotalesConManager(manager, liquidacionId, user);
+      await this.liquidacionesService.recalcularTotales(liquidacionId, user, manager);
 
       return saved
     })
@@ -140,7 +140,7 @@ async update(id: number, updateGastoVarioDto: UpdateGastoVarioDto, user: User,fi
       validarBloqueoEdicion(gastoVarios.liquidacion, user);
       const liquidacionId = gastoVarios.liquidacion.id;
       await manager.remove(GastoVario, gastoVarios);
-      await this.liquidacionesService.recalcularTotalesConManager(manager, liquidacionId, user);
+      await this.liquidacionesService.recalcularTotales(liquidacionId, user, manager);
       
       return { message: 'Gasto Eliminado' };
 

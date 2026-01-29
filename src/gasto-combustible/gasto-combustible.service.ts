@@ -51,7 +51,7 @@ export class GastoCombustibleService {
 
       const saved = await manager.save(GastoCombustible, gasto)
 
-      await this.liquidacionesService.recalcularTotalesConManager( manager, liquidacion.id, user)
+      await this.liquidacionesService.recalcularTotales( liquidacion.id, user, manager)
       await this.liquidacionesService.pasarARevisionSiBorradorConManager( manager, liquidacion.id, user )
 
       return saved;
@@ -118,7 +118,7 @@ export class GastoCombustibleService {
 
       const liquidacionId = gastoCombustible.liquidacion.id;
       const saved = await manager.save(GastoCombustible, gastoCombustible);
-      await this.liquidacionesService.recalcularTotalesConManager(manager, liquidacionId, user);
+      await this.liquidacionesService.recalcularTotales(liquidacionId, user, manager);
 
       return saved;
     })
@@ -142,7 +142,7 @@ export class GastoCombustibleService {
 
       const liquidacionId = gastoCombustible.liquidacion.id;
       await manager.remove(GastoCombustible, gastoCombustible)
-      await this.liquidacionesService.recalcularTotalesConManager(manager, liquidacionId, user)
+      await this.liquidacionesService.recalcularTotales(liquidacionId, user, manager)
 
       return { message: "Gasto eliminado correctamente" }
     })

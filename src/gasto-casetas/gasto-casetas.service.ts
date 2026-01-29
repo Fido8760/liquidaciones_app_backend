@@ -49,7 +49,7 @@ export class GastoCasetasService {
         liquidacion
       })
       const saved = await manager.save(gasto)
-      await this.liquidacionesService.recalcularTotalesConManager(manager,liquidacion.id)
+      await this.liquidacionesService.recalcularTotales(liquidacion.id, user, manager)
       await this.liquidacionesService.pasarARevisionSiBorradorConManager(manager, liquidacion.id)
       return saved
     })
@@ -115,7 +115,7 @@ export class GastoCasetasService {
 
       const liquidacionId = gastoCaseta.liquidacion.id;
       const saved = await manager.save(GastoCaseta, gastoCaseta)
-      await this.liquidacionesService.recalcularTotalesConManager(manager, liquidacionId, user);
+      await this.liquidacionesService.recalcularTotales(liquidacionId, user, manager)
   
       return saved
     })
@@ -138,7 +138,7 @@ export class GastoCasetasService {
       validarBloqueoEdicion(gastoCaseta.liquidacion, user)
       const liquidacion = gastoCaseta.liquidacion.id
       await manager.remove(GastoCaseta, gastoCaseta)
-      await this.liquidacionesService.recalcularTotalesConManager(manager, liquidacion, user)
+      await this.liquidacionesService.recalcularTotales(liquidacion, user, manager)
       return { message : "Gasto Eliminado" }
 
     })
