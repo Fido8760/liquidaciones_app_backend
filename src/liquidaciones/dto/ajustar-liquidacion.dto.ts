@@ -24,4 +24,8 @@ export class AjustarLiquidacionDto {
   @IsNotEmpty({ message: 'Debe proporcionar un motivo cuando hay un ajuste manual.' })
   motivo_ajuste?: string;
 
+  @IsOptional()
+  @IsNumber({}, {message: 'El costo del ferry debe ser numero'})
+  @Min(0,  {message: 'La cantidad no puede ser negativa' })
+  gasto_ferry? :number
 }

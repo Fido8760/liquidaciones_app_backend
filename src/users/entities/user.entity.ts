@@ -50,6 +50,12 @@ export class User {
     @OneToMany(() => Liquidacion, (liquidacion) => liquidacion.usuario_pagador)
     liquidaciones_pagadas: Liquidacion[];
 
+    @OneToMany(() => Liquidacion, (liquidacion) => liquidacion.usuario_modificador_comision)
+    liquidaciones_modificadas_comision: Liquidacion[];
+
+    @OneToMany(() => Liquidacion, (liquidacion) => liquidacion.usuario_modificador_total)
+    liquidaciones_modificadas_total: Liquidacion[];
+
     @OneToMany(() => Nota, (nota) => nota.usuario)
     notas: Nota[];
 

@@ -62,6 +62,9 @@ export class Liquidacion {
     @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, nullable: false })
     total_combustible: number;
 
+    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, nullable: true })
+    gasto_ferry: number;
+
     @Column({ type: 'decimal', precision: 5, scale: 2, default: 0, nullable: false })
     comision_porcentaje: number;
 
@@ -107,8 +110,14 @@ export class Liquidacion {
     @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, nullable: false })
     total_deducciones_comerciales: number;
     
+    @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+    total_neto_sugerido: number | null;
+    
     @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, nullable: false })
     total_neto_pagar: number;
+    
+    @Column({ type: 'boolean', default: false })
+    total_modificado_manualmente: boolean;
 
     @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, nullable: false })
     utilidad_viaje: number;
@@ -133,14 +142,25 @@ export class Liquidacion {
 
     @ManyToOne(() => User, (user) => user.liquidaciones_aprobadas, { nullable: true })
     usuario_aprobador: User | null;
+
+    @ManyToOne(() => User, (user) => user.liquidaciones_modificadas_comision, { nullable: true })
+    usuario_modificador_comision: User | null;
     
     @ManyToOne(() => User, (user) => user.liquidaciones_pagadas, { nullable: true })
     usuario_pagador: User | null;
 
+    @ManyToOne(() => User, (user) => user.liquidaciones_modificadas_total, { nullable: true })
+    usuario_modificador_total: User | null;
+
     @Column({ type: 'timestamp', nullable: true })
     fecha_pago: Date | null;
 
+    @Column({ type: 'timestamp', nullable: true })
+    fecha_modificacion_comision: Date | null;
+
+    @Column({ type: 'timestamp', nullable: true })
+    fecha_modificacion_total: Date | null;
+
     @OneToMany(() => Nota, (nota) => nota.liquidacion, { cascade: true })
     notas: Nota[];
-
 }

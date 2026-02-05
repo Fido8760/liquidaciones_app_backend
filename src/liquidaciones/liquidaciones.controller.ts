@@ -10,6 +10,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/users/enums/roles-usuarios.enum';
 import { CambiarEstadoDto } from './dto/cambiar-estado.dto';
 import { AjustarLiquidacionDto } from './dto/ajustar-liquidacion.dto';
+import { ModificarTotalDto } from './dto/moficar-total.dto';
 
 @Controller('liquidaciones')
 export class LiquidacionesController {
@@ -79,6 +80,16 @@ export class LiquidacionesController {
     @GetUser() user: User
   ) {
     return this.liquidacionesService.ajustarLiquidacion(+id, ajustarLiquidacionDto, user);
+  }
+
+  @Patch(':id/modificar-total-pago')
+  @Roles(UserRole.DIRECTOR, UserRole.ADMIN, UserRole.SISTEMAS)
+  modificarTotalPago(
+    @Param('id', ValidarIdPipe) id: string,
+    @Body() modificartotalDto: ModificarTotalDto,
+    @GetUser() user: User
+  ) {
+    return this.liquidacionesService.modificarTotalPago(+id, modificartotalDto, user);
   }
 
 }

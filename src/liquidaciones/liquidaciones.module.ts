@@ -12,11 +12,14 @@ import { CostoFlete } from '../costo-fletes/entities/costo-flete.entity';
 import { DeduccionFlete } from '../deduccion-flete/entities/deduccion-flete.entity';
 import { Anticipo } from '../anticipos/entities/anticipo.entity';
 import { User } from 'src/users/entities/user.entity';
+import { LiquidacionCalculosService } from './services/liquidacion-calculos.service';
+import { LiquidacionValidacionesService } from './services/liquidacion-validaciones.service';
+import { LiquidacionWorkflowService } from './services/liquidacion-workflow.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Liquidacion, Unidad, Operador, GastoCaseta, GastoCombustible, GastoVario, CostoFlete, DeduccionFlete, Anticipo, User])],
   controllers: [LiquidacionesController],
-  providers: [LiquidacionesService],
+  providers: [LiquidacionesService, LiquidacionCalculosService, LiquidacionValidacionesService, LiquidacionWorkflowService],
   exports: [LiquidacionesService]
 })
 export class LiquidacionesModule {}
