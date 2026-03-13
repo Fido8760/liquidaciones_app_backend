@@ -46,10 +46,13 @@ export class LiquidacionesService {
     const comision_porcentaje_inicial = obtenerPorcentajeComisionDefault(tipoUnidad);
 
 
-    const liquidacion =  this.liquidacionesRepository.save({
+    const liquidacionData: Partial<Liquidacion> = ({
       ...createLiquidacioneDto,
       unidad,
       operador,
+      fecha_inicio: new Date(createLiquidacioneDto.fecha_inicio),
+      fecha_fin: new Date(createLiquidacioneDto.fecha_fin),
+      fecha_llegada: new Date(createLiquidacioneDto.fecha_llegada),
       usuario_creador: user,
       comision_porcentaje: comision_porcentaje_inicial,
       comision_estimada: 0,
@@ -58,19 +61,15 @@ export class LiquidacionesService {
       diesel_en_contra_sin_iva: 0,
       ajuste_manual: 0,
       total_combustible: 0,
-      total_casetas: 0,
-      total_gastos_varios: 0,
-      total_costo_fletes: 0,
-      total_deducciones_comerciales: 0,
+      total_fletes: 0,
+      total_gastos: 0,
       total_bruto: 0,
       total_neto_pagar: 0,
       utilidad_viaje: 0,
     });
 
-    return {
-      message: 'Liquidación creada correctamente',
-      liquidacion
-    };
+    const liquidacion = await this.liquidacionesRepository.save(liquidacionData)
+    return liquidacion;
   }
 
   async findAll(unidadId: number | null, take: number, skip: number) {
@@ -127,11 +126,9 @@ export class LiquidacionesService {
       relations: {
         unidad: true,
         operador: true,
-        gastos_caseta: true,
         gastos_combustible: true,
-        gastos_varios: true,
-        costos_fletes: true,
-        deducciones: true,
+        gastos: true,
+        fletes: true,
         anticipos: true,
         usuario_creador: true,
         usuario_editor: true,
@@ -212,42 +209,38 @@ export class LiquidacionesService {
     return liquidacion;
   }
 
-  async update( id: number, updateLiquidacionDto: UpdateLiquidacioneDto, user: User ) {
+  async update(id: number, updateLiquidacionDto: UpdateLiquidacioneDto, user: User) {
     const liquidacion = await this.findOne(id);
 
-    validarBloqueoEdicion(liquidacion, user)
+    validarBloqueoEdicion(liquidacion, user);
 
-    Object.assign(liquidacion, updateLiquidacionDto);
+    // Desestructura los campos que manejas aparte
+    const { fecha_inicio, fecha_fin, fecha_llegada, unidadId, operadorId, ...resto } = updateLiquidacionDto;
 
-    if (updateLiquidacionDto.unidadId) {
-      const unidad = await this.unidadesRepository.findOneBy({
-        id: updateLiquidacionDto.unidadId,
-      });
-      if (!unidad) {
-        let errors: string[] = [];
-        errors.push('La unidad no existe');
-        throw new NotFoundException(errors);
-      }
+    // Asigna solo los campos planos
+    Object.assign(liquidacion, resto);
 
+    // Convierte fechas si vienen en el DTO
+    if (fecha_inicio)  liquidacion.fecha_inicio  = new Date(fecha_inicio);
+    if (fecha_fin)     liquidacion.fecha_fin      = new Date(fecha_fin);
+    if (fecha_llegada) liquidacion.fecha_llegada  = new Date(fecha_llegada);
+
+    if (unidadId) {
+      const unidad = await this.unidadesRepository.findOneBy({ id: unidadId });
+      if (!unidad) throw new NotFoundException('La unidad no existe');
       liquidacion.unidad = unidad;
     }
 
-    if (updateLiquidacionDto.operadorId) {
-      const operador = await this.operadoresRepository.findOneBy({
-        id: updateLiquidacionDto.operadorId,
-      });
-      if (!operador) {
-        let errors: string[] = [];
-        errors.push('El operador no existe');
-        throw new NotFoundException(errors);
-      }
-
+    if (operadorId) {
+      const operador = await this.operadoresRepository.findOneBy({ id: operadorId });
+      if (!operador) throw new NotFoundException('El operador no existe');
       liquidacion.operador = operador;
     }
+
     liquidacion.usuario_editor = user;
 
     await this.liquidacionesRepository.save(liquidacion);
-    return await this.calculosService.recalcularTotales(liquidacion.id, user)
+    return this.calculosService.recalcularTotales(liquidacion.id, user);
   }
 
   async remove(id: number, user: User) {

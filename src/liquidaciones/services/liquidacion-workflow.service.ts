@@ -84,6 +84,7 @@ export class LiquidacionWorkflowService {
 
         liquidacion.rendimiento_tabulado = ajustarLiquidacionDto.rendimiento_tabulado;
         liquidacion.comision_porcentaje = ajustarLiquidacionDto.comision_porcentaje;
+        liquidacion.gasto_ferry = ajustarLiquidacionDto.gasto_ferry || 0;
         liquidacion.ajuste_manual = ajustarLiquidacionDto.ajuste_manual || 0;
         liquidacion.motivo_ajuste = ajustarLiquidacionDto.motivo_ajuste || null;
         liquidacion.usuario_editor = user;
@@ -122,7 +123,11 @@ export class LiquidacionWorkflowService {
         liquidacion.fecha_modificacion_total = new Date();
         liquidacion.usuario_editor = user;
 
-        const utilidadViaje = liquidacion.total_costo_fletes - liquidacion.total_combustible - liquidacion.total_casetas - liquidacion.total_gastos_varios - liquidacion.total_deducciones_comerciales - modificarTotalDto.total_neto_pagar;
+        const utilidadViaje = Number(liquidacion.total_fletes)
+            - Number(liquidacion.total_combustible)
+            - Number(liquidacion.gasto_ferry || 0)
+            - Number(liquidacion.total_gastos)
+            - modificarTotalDto.total_neto_pagar;
 
         liquidacion.utilidad_viaje = Number(utilidadViaje.toFixed(2));
 

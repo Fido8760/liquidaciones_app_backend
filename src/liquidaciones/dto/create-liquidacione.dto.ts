@@ -18,11 +18,6 @@ export class CreateLiquidacioneDto {
     @Min(0, { message: 'El Kilometros Recorridos no puede ser negativo.'})
     @IsNotEmpty({ message: 'El campo Kilometros Recorridos es obligatorio.' })
     kilometros_recorridos: number
-
-    @IsString({ message: 'El campo cliente debe ser texto.' })
-    @MaxLength(120, { message: 'El cliente no puede tener más de 120 caracteres.' })
-    @IsNotEmpty({ message: 'El campo cliente es obligatorio.' })
-    cliente: string
     
     @IsString({ message: 'El campo folio de liquidacion debe ser texto.' })
     @MaxLength(120, { message: 'El folio de liquidacion no puede tener más de 120 caracteres.' })

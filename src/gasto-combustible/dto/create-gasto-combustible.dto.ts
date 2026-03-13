@@ -4,12 +4,6 @@ import { MetodoPago } from "../enums/metodo-pago.enum"
 
 export class CreateGastoCombustibleDto {
 
-    @IsNotEmpty({ message: 'Los litros son obligatorios' })
-    @IsNumber({ maxDecimalPlaces: 2 }, { message: 'Los litros deben ser un número' })
-    @IsPositive({ message: 'Debe ser un valor positivo' })
-    @Type(() => Number)
-    litros: number
-
     @IsNotEmpty({ message: 'El precio es obligatorio' })
     @IsPositive({ message: 'El precio por litro debe ser un valor positivo' }) 
     @IsNumber({ maxDecimalPlaces: 2 }, { message: 'Precio no válido' })

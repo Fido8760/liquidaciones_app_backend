@@ -48,37 +48,24 @@ export class AnticiposService {
 
   }
 
-  async findAll() {
+  async findByLiquidacion(liquidacionId: number): Promise<{ anticipos: Anticipo[], total: number }> {
     const [anticipos, total] = await this.anticiposRepoitory.findAndCount({
-      relations: {
-        liquidacion: true
-      },
-      order: {
-        id: 'ASC'
-      }
+      where: { liquidacion: { id: liquidacionId} },
+      order: { id: 'ASC'}
     })
 
-    return {
-      anticipos,
-      total
-    }
+    return { anticipos, total }
   }
 
   async findOne(id: number) {
     const anticipo = await this.anticiposRepoitory.findOne({
-      where: {
-        id
-      },
-      relations: {
-        liquidacion: true
-      }
-    })
+      where: { id },
+      relations: { liquidacion: true }
+    });
 
-    if(!anticipo) {
-      throw new NotFoundException(`El anticipo con el ID: ${id} no fue encontrado`)
-    }
+    if(!anticipo) throw new NotFoundException(`El anticipo con el ID: ${id} no fue encontrado`);
+
     return anticipo
-
   }
 
   async update(id: number, updateAnticipoDto: UpdateAnticipoDto, user: User) {
@@ -86,16 +73,12 @@ export class AnticiposService {
     return await this.dataSource.transaction(async manager => {
       
       const anticipo = await manager.findOne(Anticipo, {
-        where: {
-          id
-        },
+        where: { id },
         relations: ['liquidacion']
       });
 
-      if(!anticipo) {
-        throw new NotFoundException(`El anticipo no fue encontrado`)
-      }
-
+      if(!anticipo) throw new NotFoundException(`El anticipo no fue encontrado`)
+      
       validarBloqueoEdicion(anticipo.liquidacion, user);
       
       Object.assign(anticipo, {
@@ -116,15 +99,11 @@ export class AnticiposService {
     return await this.dataSource.transaction(async manager => {
       
       const anticipo = await manager.findOne(Anticipo, {
-        where: {
-          id
-        },
+        where: { id },
         relations: ['liquidacion']
       })
 
-      if(!anticipo) {
-        throw new NotFoundException(`El anticipo no fue encontrado`)
-      }
+      if(!anticipo) throw new NotFoundException(`El anticipo no fue encontrado`)
 
       validarBloqueoEdicion(anticipo.liquidacion, user);
 
@@ -132,7 +111,7 @@ export class AnticiposService {
 
       await manager.remove(Anticipo, anticipo)
       await this.liquidacionesService.recalcularTotales(liquidacionId, user, manager);
-      return { manager: "Anticipo Eliminado" }
+      return { manager: "Anticipo eliminado correctamente" }
     })
   }
 }

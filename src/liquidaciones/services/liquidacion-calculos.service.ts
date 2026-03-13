@@ -3,21 +3,21 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { Liquidacion } from '../entities/liquidacion.entity';
 import { GastoCombustible } from 'src/gasto-combustible/entities/gasto-combustible.entity';
-import { GastoCaseta } from 'src/gasto-casetas/entities/gasto-caseta.entity';
-import { GastoVario } from 'src/gasto-varios/entities/gasto-vario.entity';
-import { CostoFlete } from 'src/costo-fletes/entities/costo-flete.entity';
+import { Flete } from 'src/fletes/entities/flete.entity';
 import { User } from 'src/users/entities/user.entity';
 import { ResultadoRendimiento } from '../enums/resultado-rendimiento.enum';
 import { obtenerPorcentajeComisionDefault } from '../utils/porcentaje-comision.util';
+import { Gasto } from 'src/gastos/entities/gasto.entity';
+import { Anticipo } from 'src/anticipos/entities/anticipo.entity';
 
 @Injectable()
 export class LiquidacionCalculosService {
     constructor(
         @InjectRepository(Liquidacion) private readonly liquidacionesRepository: Repository<Liquidacion>,
         @InjectRepository(GastoCombustible) private readonly gastoCombustibleRepository: Repository<GastoCombustible>,
-        @InjectRepository(GastoCaseta) private readonly gastoCasetaRepository: Repository<GastoCaseta>,
-        @InjectRepository(GastoVario) private readonly gastosVariosRepository: Repository<GastoVario>,
-        @InjectRepository(CostoFlete) private readonly costosFletesRepository: Repository<CostoFlete>,
+        @InjectRepository(Flete) private readonly costosFletesRepository: Repository<Flete>,
+        @InjectRepository(Gasto) private readonly gastoRepository: Repository<Gasto>,
+        @InjectRepository(Anticipo) private readonly anticiposRepository: Repository<Anticipo>
     ) {}
 
     async recalcularTotales(liquidacionId: number, user?: User, manager?: EntityManager) {
@@ -26,9 +26,9 @@ export class LiquidacionCalculosService {
         // ═══════════════════════════════════════════════════
         const repoLiquidacion = manager ? manager.getRepository(Liquidacion) : this.liquidacionesRepository;
         const repoCombustible = manager ? manager.getRepository(GastoCombustible) : this.gastoCombustibleRepository;
-        const repoCasetas = manager ? manager.getRepository(GastoCaseta) : this.gastoCasetaRepository;
-        const repoVarios = manager ? manager.getRepository(GastoVario) : this.gastosVariosRepository;
-        const repoFletes = manager ? manager.getRepository(CostoFlete) : this.costosFletesRepository;
+        const repoFletes = manager ? manager.getRepository(Flete) : this.costosFletesRepository;
+        const repoGastos = manager ? manager.getRepository(Gasto) : this.gastoRepository;
+        const repoAnticipos = manager ? manager.getRepository(Anticipo) : this.anticiposRepository;
 
         // ═══════════════════════════════════════════════════
         // CARGAR LIQUIDACIÓN CON RELACIONES
@@ -38,14 +38,13 @@ export class LiquidacionCalculosService {
             relations: ['unidad', 'operador'],
         });
 
-        if (!liquidacion) {
-            throw new NotFoundException('La liquidación no existe');
-        }
+        if (!liquidacion) throw new NotFoundException('La liquidación no existe');
 
         // ═══════════════════════════════════════════════════
         // 1. SUMATORIAS DE GASTOS E INGRESOS (Paralelo)
         // ═══════════════════════════════════════════════════
-        const [ combustibleRes, casetasRes, variosRes, fletesRes, anticiposRes, deducComRes, ] = await Promise.all([
+        const [combustibleRes, fletesRes, gastosRes, anticiposRes, gastosOperadorRes] = await Promise.all([
+
             // Combustible (monto y litros)
             repoCombustible
                 .createQueryBuilder('g')
@@ -53,52 +52,44 @@ export class LiquidacionCalculosService {
                 .addSelect('COALESCE(SUM(g.litros), 0)', 'totalLitros')
                 .where('g.liquidacionId = :id', { id: liquidacionId })
                 .getRawOne(),
-            
-            // Casetas
-            repoCasetas
-                .createQueryBuilder('g')
-                .select('COALESCE(SUM(g.monto), 0)', 'total')
-                .where('g.liquidacionId = :id', { id: liquidacionId })
-                .getRawOne(),
-
-            // Gastos varios
-            repoVarios
-                .createQueryBuilder('g')
-                .select('COALESCE(SUM(g.monto), 0)', 'total')
-                .where('g.liquidacionId = :id', { id: liquidacionId })
-                .getRawOne(),
 
             // Fletes (ingresos)
             repoFletes
-                .createQueryBuilder('c')
-                .select('COALESCE(SUM(c.monto), 0)', 'total')
-                .where('c.liquidacionId = :id', { id: liquidacionId })
+                .createQueryBuilder('f')
+                .select('COALESCE(SUM(f.monto), 0)', 'total')
+                .where('f.liquidacionId = :id', { id: liquidacionId })
                 .getRawOne(),
 
+            // Gastos unificados (casetas, varios, cargos, etc.)
+            repoGastos
+                .createQueryBuilder('g')
+                .select('COALESCE(SUM(g.monto), 0)', 'total')
+                .where('g.liquidacionId = :id', { id: liquidacionId })
+                .getRawOne(),
+            
             // Anticipos
-            repoLiquidacion
-                .createQueryBuilder('liq')
-                .leftJoin('liq.anticipos', 'ant')
+            repoAnticipos
+                .createQueryBuilder('ant')
                 .select('COALESCE(SUM(ant.monto), 0)', 'total')
-                .where('liq.id = :id', { id: liquidacionId })
+                .where('ant.liquidacionId = :id', { id: liquidacionId })
                 .getRawOne(),
 
-            // Deducciones comerciales
-            repoLiquidacion
-                .createQueryBuilder('liq')
-                .leftJoin('liq.deducciones', 'ded')
-                .select('COALESCE(SUM(ded.monto), 0)', 'total')
-                .where('liq.id = :id', { id: liquidacionId })
+            // Gastos que afectan al operador
+            repoGastos
+                .createQueryBuilder('g')
+                .select('COALESCE(SUM(g.monto), 0)', 'total')
+                .where('g.liquidacionId = :id', { id: liquidacionId })
+                .andWhere('g.afecta_operador = :afecta', { afecta: true })
                 .getRawOne(),
+
         ]);
 
         const total_diesel_monto = Number(combustibleRes?.totalMonto) || 0;
         const total_diesel_litros = Number(combustibleRes?.totalLitros) || 0;
         const total_flete = Number(fletesRes?.total) || 0;
-        const total_casetas = Number(casetasRes?.total) || 0;
-        const total_gastos_varios = Number(variosRes?.total) || 0;
+        const total_gastos = Number(gastosRes?.total) || 0;
         const suma_anticipos = Number(anticiposRes?.total) || 0;
-        const deduc_comerciales = Number(deducComRes?.total) || 0;
+        const total_gastos_operador = Number(gastosOperadorRes?.total) || 0;
 
         // ═══════════════════════════════════════════════════
         // 2. CÁLCULO DE RENDIMIENTO DE DIESEL
@@ -107,22 +98,14 @@ export class LiquidacionCalculosService {
         const rend_tab = Number(liquidacion.rendimiento_tabulado) || 1;
 
         // Rendimiento real (km/litro)
-        const rendimiento_real = total_diesel_litros > 0 
-            ? Number((kms / total_diesel_litros).toFixed(2)) 
-            : 0;
+        const rendimiento_real = total_diesel_litros > 0 ? Number((kms / total_diesel_litros).toFixed(2)) : 0;
 
         // Precio promedio por litro
-        const precio_promedio_litro = total_diesel_litros > 0 
-            ? (total_diesel_monto / total_diesel_litros) 
-            : 0;
+        const precio_promedio_litro = total_diesel_litros > 0 ? (total_diesel_monto / total_diesel_litros) : 0;
 
         // Litros tabulados
         const litros_tabulados = rend_tab > 0 ? (kms / rend_tab) : 0;
-
-        // Diferencia en litros
         const diferencia_litros = total_diesel_litros - litros_tabulados;
-
-        // Diferencia en pesos
         const diferencia_pesos_con_iva = diferencia_litros * precio_promedio_litro;
         const diferencia_sin_iva = diferencia_pesos_con_iva / 1.16;
 
@@ -160,14 +143,10 @@ export class LiquidacionCalculosService {
         }
 
         // Comisión estimada (lo que el sistema calcula)
-        const comision_estimada = (base_comision > 0 && pct_final > 0) 
-            ? (base_comision * (pct_final / 100)) 
-            : 0;
+        const comision_estimada = (base_comision > 0 && pct_final > 0) ? (base_comision * (pct_final / 100)) : 0;
 
         // Comisión pagada (usa comision_pagada si existe, sino la estimada)
-        const comision_pagada = liquidacion.comision_pagada !== null 
-            ? Number(liquidacion.comision_pagada) 
-            : comision_estimada;
+        const comision_pagada = liquidacion.comision_pagada !== null ? Number(liquidacion.comision_pagada) : comision_estimada;
 
         // Ajuste manual (cargos por golpes, préstamos, etc.)
         const ajuste_manual = Number(liquidacion.ajuste_manual || 0);
@@ -184,13 +163,11 @@ export class LiquidacionCalculosService {
         let total_neto_pagar: number;
 
         if (liquidacion.total_modificado_manualmente) {
-            // ✅ El director ya dictó el total final manualmente
-            // NO recalcular nada, usar el valor que guardó
             total_neto_pagar = Number(liquidacion.total_neto_pagar);
         } else {
-            // ✅ Cálculo automático del sistema
-            // Total bruto (ya incluye el ajuste) - Anticipos
-            total_neto_pagar = total_bruto - suma_anticipos;
+            total_neto_pagar = total_bruto
+                - suma_anticipos
+                - total_gastos_operador;
         }
 
         // ═══════════════════════════════════════════════════
@@ -199,10 +176,8 @@ export class LiquidacionCalculosService {
         // Flete - Diesel - Ferry - Casetas - Varios - Deducciones - Lo que REALMENTE se pagó
         const utilidad_viaje = total_flete 
             - total_diesel_monto 
-            - gasto_ferry        // 🆕 Restamos el ferry
-            - total_casetas 
-            - total_gastos_varios 
-            - deduc_comerciales
+            - gasto_ferry
+            - total_gastos
             - total_neto_pagar;
         // ═══════════════════════════════════════════════════
         // 8. PREPARAR DATOS PARA ACTUALIZAR
@@ -210,10 +185,8 @@ export class LiquidacionCalculosService {
         const updateData = {
             // Totales de gastos e ingresos
             total_combustible: Number(total_diesel_monto.toFixed(2)),
-            total_casetas: Number(total_casetas.toFixed(2)),
-            total_gastos_varios: Number(total_gastos_varios.toFixed(2)),
-            total_costo_fletes: Number(total_flete.toFixed(2)),
-            total_deducciones_comerciales: Number(deduc_comerciales.toFixed(2)),
+            total_fletes: Number(total_flete.toFixed(2)),
+            total_gastos: Number(total_gastos.toFixed(2)),
             
             // Comisión
             comision_porcentaje: Number(pct_final.toFixed(2)),

@@ -6,10 +6,7 @@ import { AppService } from './app.service';
 import { LiquidacionesModule } from './liquidaciones/liquidaciones.module';
 import { typeOrmConfig } from './config/typeorm.config';
 import { GastoCombustibleModule } from './gasto-combustible/gasto-combustible.module';
-import { GastoCasetasModule } from './gasto-casetas/gasto-casetas.module';
-import { GastoVariosModule } from './gasto-varios/gasto-varios.module';
-import { CostoFletesModule } from './costo-fletes/costo-fletes.module';
-import { DeduccionFleteModule } from './deduccion-flete/deduccion-flete.module';
+import { FletesModule } from './fletes/fletes.module';
 import { AnticiposModule } from './anticipos/anticipos.module';
 import { UploadImageModule } from './upload-image/upload-image.module';
 import { UnidadesModule } from './unidades/unidades.module';
@@ -22,6 +19,8 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { NotaModule } from './nota/nota.module';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { APP_GUARD } from '@nestjs/core';
+import { GastosModule } from './gastos/gastos.module';
+import { TipoGastosModule } from './tipo-gastos/tipo-gastos.module';
 
 @Module({
   imports: [
@@ -40,10 +39,7 @@ import { APP_GUARD } from '@nestjs/core';
     }),
     LiquidacionesModule,
     GastoCombustibleModule,
-    GastoCasetasModule,
-    GastoVariosModule,
-    CostoFletesModule,
-    DeduccionFleteModule,
+    FletesModule,
     AnticiposModule,
     UploadImageModule,
     UnidadesModule,
@@ -51,7 +47,9 @@ import { APP_GUARD } from '@nestjs/core';
     UsersModule,
     AuthModule,
     EmailModule,
-    NotaModule
+    NotaModule,
+    GastosModule,
+    TipoGastosModule
   ],
   controllers: [AppController],
   providers: [

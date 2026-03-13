@@ -2,9 +2,9 @@ import { IsNotEmpty, IsNumber, IsOptional, IsString, Max, MaxLength, Min, Valida
 
 export class AjustarLiquidacionDto {
   
-  @IsNumber({}, { message: 'El rendimiento ajustado debe ser un número.' })
-  @Min(0, { message: 'El rendimiento ajustado no puede ser negativo.' })
-  @IsNotEmpty({ message: 'El rendimiento ajustado es obligatorio.' })
+  @IsNumber({}, { message: 'El rendimiento tabulado debe ser un número.' })
+  @Min(0, { message: 'El rendimiento tabulado no puede ser negativo.' })
+  @IsNotEmpty({ message: 'El rendimiento tabulado es obligatorio.' })
   rendimiento_tabulado: number;
 
   @IsNumber({}, { message: 'El porcentaje de comisión debe ser un número.' })

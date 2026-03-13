@@ -5,25 +5,28 @@ import { Liquidacion } from "../../liquidaciones/entities/liquidacion.entity";
 @Entity('gasto_combustible')
 export class GastoCombustible {
     @PrimaryGeneratedColumn()
-    id: number
+    id: number;
 
     @Column({ type: 'decimal', precision: 6, scale: 2 })
-    litros: number
+    litros: number;
 
     @Column({ type: 'decimal', precision: 6, scale: 2 })
-    precio_litro: number
+    precio_litro: number;
 
     @Column({ type: 'decimal', precision: 10, scale: 2 })
-    monto: number
+    monto: number;
 
     @Column({ type: 'enum', enum: MetodoPago})
-    metodo_pago: MetodoPago
+    metodo_pago: MetodoPago;
 
     @Column({ type: 'varchar', length: 120, nullable: true, default: 'default.pdf' })
-    evidencia: string
+    evidencia: string;
+
+    @Column({ type: 'varchar', length: 255, nullable: true, default: null })
+    evidencia_public_id: string | null;
 
     @ManyToOne(() => Liquidacion, { onDelete: 'CASCADE'})
-    liquidacion: Liquidacion
+    liquidacion: Liquidacion;
 
     @DeleteDateColumn()
     deletedAt: Date;

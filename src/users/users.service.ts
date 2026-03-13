@@ -17,33 +17,29 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto, user: User) {
-    const { email, password } = createUserDto;
-    try {
+    const existe = await this.userRepository.findOne({
+      where: { email: createUserDto.email.trim().toLowerCase() }
+    });
 
-      const userExists = await this.userRepository.findOne({ where: { email}});
-      if ( userExists ) {
-        throw new ConflictException(`El correo ${email} ya está registrado`);
-      }
-
-      const hashedPassword = await hashPassword(password)
-
-      const newUser = this.userRepository.create({
-        ...createUserDto,
-        password: hashedPassword,
-        createdBy: user
-      });
-      
-      await this.userRepository.save(newUser);
-      return { message: 'Usuario creado correctamente' };
-
-    } catch (error) {
-      if ( error instanceof HttpException) throw error;
-      throw new InternalServerErrorException('Error al crear el usuario')
-      
+    if(existe) {
+      throw new ConflictException(`El correo ${createUserDto.email} ya está registrado`);
     }
+
+    const hashedPassword = await hashPassword(createUserDto.password);
+
+    const newUser = this.userRepository.create({
+      ...createUserDto,
+      email: createUserDto.email.trim().toLowerCase(),
+      nombre: createUserDto.nombre.trim(),
+      apellido: createUserDto.apellido.trim(),
+      password: hashedPassword,
+      createdBy: user,
+    });
+
+    return this.userRepository.save(newUser);
   }
 
-  async findAll() {
+  async findAll():Promise<{users: User[], total: number}> {
     const [users, total ] = await this.userRepository.findAndCount({
       select: {
         id: true,
@@ -58,22 +54,26 @@ export class UsersService {
         id: 'ASC'
       }
     })
-    return {
-      total,
-      users
-    }
+    return { total, users }
   }
 
-  async findOne(id: number) {
-    const user = await this.userRepository.findOne({ where: { id } });
+  async findOne(id: number): Promise<User> {
+    const user = await this.userRepository.findOne({ 
+      where: { id },
+      select: {
+        id: true,
+        nombre: true,
+        apellido: true,
+        email: true,
+        rol: true,
+        activo: true,
+        createdAt: true,
+      } 
+    });
     
-    if( !user ) {
-      throw new NotFoundException('Usuario no encontrado')
-    }
+    if( !user ) throw new NotFoundException('Usuario no encontrado');
 
-    const { password, token, permisos_especiales,...rest} = user;
-
-    return rest;
+    return user;
   }
 
   async update(id: number, updateUserDto: UpdateUserDto, user: User) {
@@ -84,12 +84,15 @@ export class UsersService {
     if (userToEdit.email === 'soporte@mudanzasamado.mx') {
       throw new ForbiddenException('Este Usuario Maestro no puede ser modificado ni desactivado');
     }
-    delete updateUserDto.password;
-    this.userRepository.merge(userToEdit, updateUserDto);
-    userToEdit.updatedBy = user;
 
-    await this.userRepository.save(userToEdit);
-    return { message: 'Usuario Actualizado Correctamente'};
+    if (updateUserDto.email) updateUserDto.email = updateUserDto.email.trim().toLowerCase();
+    if (updateUserDto.nombre) updateUserDto.nombre = updateUserDto.nombre.trim();
+    if (updateUserDto.apellido) updateUserDto.apellido = updateUserDto.apellido.trim();
+
+    Object.assign(userToEdit, updateUserDto);
+    userToEdit.updatedBy = user;
+  
+    return this.userRepository.save(userToEdit);
   }
 
   async remove(id: number, user: User) {
@@ -106,11 +109,9 @@ export class UsersService {
     return { message: 'Usuario eliminado correctamente'};
   }
   
-  async cambiarEstado(id: number, cambiarEstadoUsuarioDTO: CambiarEstadoUsuarioDTO, user: User) {
+  async cambiarEstado(id: number, cambiarEstadoUsuarioDTO: CambiarEstadoUsuarioDTO, user: User): Promise<User> {
     const usertToUpdate = await this.userRepository.findOneBy({ id });
-    if( !usertToUpdate ) {
-      throw new NotFoundException('Usuario no encontrado')
-    }
+    if( !usertToUpdate ) throw new NotFoundException('Usuario no encontrado')
 
     if(usertToUpdate.email === 'soporte@mudanzasamado.mx') {
       throw new ForbiddenException('Este Usuario Maestro no puede ser desactivado')
@@ -119,13 +120,7 @@ export class UsersService {
     usertToUpdate.activo = cambiarEstadoUsuarioDTO.activo;
     usertToUpdate.updatedBy = user;
 
-    await this.userRepository.save(usertToUpdate);
-
-    return {
-      message: usertToUpdate.activo
-        ? 'Usuario reactivado correctamente'
-        : 'Usuario desactivado correctamente',
-    };
+    return this.userRepository.save(usertToUpdate);
   }
 }
 
