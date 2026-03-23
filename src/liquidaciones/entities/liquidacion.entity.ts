@@ -86,6 +86,9 @@ export class Liquidacion {
     
     @Column({ type: 'boolean', default: false })
     total_modificado_manualmente: boolean;
+
+    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+    total_gastos_empresa: number;
     
     @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, nullable: false })
     utilidad_viaje: number;

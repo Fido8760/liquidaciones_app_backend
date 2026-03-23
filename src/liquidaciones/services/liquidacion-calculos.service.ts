@@ -43,7 +43,7 @@ export class LiquidacionCalculosService {
         // ═══════════════════════════════════════════════════
         // 1. SUMATORIAS DE GASTOS E INGRESOS (Paralelo)
         // ═══════════════════════════════════════════════════
-        const [combustibleRes, fletesRes, gastosRes, anticiposRes, gastosOperadorRes] = await Promise.all([
+        const [combustibleRes, fletesRes, gastosRes, anticiposRes, gastosOperadorRes, gastosEmpresaRes] = await Promise.all([
 
             // Combustible (monto y litros)
             repoCombustible
@@ -82,6 +82,14 @@ export class LiquidacionCalculosService {
                 .andWhere('g.afecta_operador = :afecta', { afecta: true })
                 .getRawOne(),
 
+            // Gastos que NO afectan al operador (nuevo)
+            repoGastos
+                .createQueryBuilder('g')
+                .select('COALESCE(SUM(g.monto), 0)', 'total')
+                .where('g.liquidacionId = :id', { id: liquidacionId })
+                .andWhere('g.afecta_operador = :afecta', { afecta: false })
+                .getRawOne(),
+
         ]);
 
         const total_diesel_monto = Number(combustibleRes?.totalMonto) || 0;
@@ -90,6 +98,7 @@ export class LiquidacionCalculosService {
         const total_gastos = Number(gastosRes?.total) || 0;
         const suma_anticipos = Number(anticiposRes?.total) || 0;
         const total_gastos_operador = Number(gastosOperadorRes?.total) || 0;
+        const total_gastos_empresa = Number(gastosEmpresaRes?.total) || 0;
 
         // ═══════════════════════════════════════════════════
         // 2. CÁLCULO DE RENDIMIENTO DE DIESEL
@@ -177,7 +186,7 @@ export class LiquidacionCalculosService {
         const utilidad_viaje = total_flete 
             - total_diesel_monto 
             - gasto_ferry
-            - total_gastos
+            - total_gastos_empresa
             - total_neto_pagar;
         // ═══════════════════════════════════════════════════
         // 8. PREPARAR DATOS PARA ACTUALIZAR
@@ -201,6 +210,7 @@ export class LiquidacionCalculosService {
             // Totales finales
             total_bruto: Number(total_bruto.toFixed(2)),
             total_neto_pagar: Number(total_neto_pagar.toFixed(2)),
+            total_gastos_empresa: Number(total_gastos_empresa.toFixed(2)),
             utilidad_viaje: Number(utilidad_viaje.toFixed(2)),
             
             // Usuario editor (si se proporciona)

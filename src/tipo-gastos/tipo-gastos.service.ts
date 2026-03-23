@@ -36,6 +36,13 @@ export class TipoGastosService {
     return { data, total}
   }
 
+  async fundActivos(): Promise<TipoGasto[]> {
+    return this.tipoGastoRepository.find({
+      where: { activo: true },
+      order: { nombre: 'ASC' }
+    })
+  }
+
   async findOne(id: number): Promise<TipoGasto> {
 
     const tipoGasto = await this.tipoGastoRepository.findOne({

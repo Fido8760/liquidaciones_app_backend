@@ -22,7 +22,7 @@ export class GastosController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new FileTypeValidator({ fileType: /(jpg|jpeg|png|pdf)$/}),
+          new FileTypeValidator({ fileType: /(jpg|jpeg|png|webp|pdf)$/}),
           new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 })
         ],
         fileIsRequired: false
@@ -52,7 +52,7 @@ export class GastosController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [ 
-          new FileTypeValidator({ fileType: /(jpg|jpeg|png|pdf)$/ }),
+          new FileTypeValidator({ fileType: /(jpg|jpeg|png|webp|pdf)$/ }),
           new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }),
         ],
         fileIsRequired: false

@@ -21,6 +21,11 @@ export class TipoGastosController {
     return this.tipoGastosService.findAll();
   }
 
+  @Get('activos')
+  findActivos() {
+    return this.tipoGastosService.fundActivos();
+  }
+
   @Get(':id')
   @Roles(UserRole.SISTEMAS, UserRole.CAPTURISTA)
   findOne(@Param('id', ValidarIdPipe) id: string) {

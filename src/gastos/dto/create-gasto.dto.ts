@@ -1,4 +1,4 @@
-import { Type } from "class-transformer";
+import { Transform, Type } from "class-transformer";
 import { IsBoolean, IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, MaxLength } from "class-validator";
 
 export class CreateGastoDto {
@@ -24,6 +24,7 @@ export class CreateGastoDto {
     @IsOptional()
     descripcion?: string;
 
+    @Transform(({ value }) => value === 'true' || value === true)
     @IsBoolean({ message: 'afecta_operador debe ser verdadero o falso' })
     @IsOptional()
     afecta_operador?: boolean;
