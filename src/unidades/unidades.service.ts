@@ -14,6 +14,9 @@ export class UnidadesService {
 
   async findAll() {
     const [ unidades, total ] = await this.unidadesRepository.findAndCount({
+      where: {
+        activo: true
+      },
       order: {
         no_unidad: 'ASC'
       }

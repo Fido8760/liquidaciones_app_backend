@@ -27,14 +27,23 @@ export class LiquidacionesController {
 
   @Get()
   @Roles(UserRole.CAPTURISTA, UserRole.DIRECTOR, UserRole.ADMIN, UserRole.SISTEMAS)
-  findAll(
-    @Query() query: GetLiquidacionQueryDto,
-  ) {
-    const unidad = query.unidad_id ? query.unidad_id : null
-    const take = query.take ? +query.take : 10
-    const skip = query.skip ? +query.skip : 0
+  findAll() {
+    return this.liquidacionesService.findAll();
+  }
 
-    return this.liquidacionesService.findAll(unidad, take, skip);
+  @Get('lista')
+  @Roles(UserRole.CAPTURISTA, UserRole.DIRECTOR, UserRole.ADMIN, UserRole.SISTEMAS)
+  findAllLista(@Query() query: GetLiquidacionQueryDto) {
+    const take = query.limit ? +query.limit : 10;
+    const skip = query.page ? (+query.page - 1) * take : 0;
+    return this.liquidacionesService.findAllLista(take, skip, {
+      operadorId: query.operadorId ? +query.operadorId : undefined,
+      unidadId: query.unidadId ? +query.unidadId : undefined,
+      folio: query.folio,
+      fechaInicio: query.fechaInicio,
+      fechaFin: query.fechaFin,
+      orden: query.orden,
+    });
   }
 
   @Get(':id')

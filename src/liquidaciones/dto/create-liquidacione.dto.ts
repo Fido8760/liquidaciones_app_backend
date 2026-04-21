@@ -1,18 +1,26 @@
-import { IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, Min, Max, IsEnum, ValidateIf } from 'class-validator'
+import { IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, Min, Matches } from 'class-validator'
 
 export class CreateLiquidacioneDto {
     
-    @IsDateString({}, { message: 'La fecha de inicio debe ser un formato válido'})
+    @Matches(/^\d{4}-\d{2}-\d{2}$/, {
+        message: 'La fecha de inicio debe tener formato YYYY-MM-DD'
+    })
     @IsNotEmpty({ message: 'La fecha de inicio es obligatoria'})
     fecha_inicio: string;
-    
-    @IsDateString({}, { message: 'La fecha de llegada debe ser un formato válido'})
-    @IsNotEmpty({ message: 'La fecha de llegada es obligatoria'})
-    fecha_llegada: string
 
-    @IsDateString({}, { message: 'La fecha de finalización debe ser un formato válido'})
+
+    @Matches(/^\d{4}-\d{2}-\d{2}$/, {
+        message: 'La fecha de llegada debe tener formato YYYY-MM-DD'
+    })
+    @IsNotEmpty({ message: 'La fecha de llegada es obligatoria'})
+    fecha_llegada: string;
+
+
+    @Matches(/^\d{4}-\d{2}-\d{2}$/, {
+        message: 'La fecha final debe tener formato YYYY-MM-DD'
+    })
     @IsNotEmpty({ message: 'La fecha final es obligatoria'})
-    fecha_fin: string
+    fecha_fin: string;
 
     @IsNumber({}, { message: 'El campo Kilometros Recorridos debe ser un número.' })
     @Min(0, { message: 'El Kilometros Recorridos no puede ser negativo.'})

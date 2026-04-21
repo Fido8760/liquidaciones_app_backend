@@ -21,6 +21,7 @@ import { RolesGuard } from './auth/guards/roles.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { GastosModule } from './gastos/gastos.module';
 import { TipoGastosModule } from './tipo-gastos/tipo-gastos.module';
+import { ProgramacionSalidasModule } from './programacion-salidas/programacion-salidas.module';
 
 @Module({
   imports: [
@@ -35,7 +36,7 @@ import { TipoGastosModule } from './tipo-gastos/tipo-gastos.module';
     }),
     TypeOrmModule.forRootAsync({
       useFactory: typeOrmConfig,
-      inject: [ConfigService]
+      inject: [ConfigService],
     }),
     LiquidacionesModule,
     GastoCombustibleModule,
@@ -49,7 +50,8 @@ import { TipoGastosModule } from './tipo-gastos/tipo-gastos.module';
     EmailModule,
     NotaModule,
     GastosModule,
-    TipoGastosModule
+    TipoGastosModule,
+    ProgramacionSalidasModule
   ],
   controllers: [AppController],
   providers: [

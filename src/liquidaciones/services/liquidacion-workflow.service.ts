@@ -47,6 +47,7 @@ export class LiquidacionWorkflowService {
         if (nuevoEstado === EstadoLiquidacion.PAGADA) {
             liquidacion.usuario_pagador = user;
             liquidacion.fecha_pago = new Date();
+            liquidacion.monto_pagado = liquidacion.total_neto_pagar;
         }
 
         // C) RECHAZO O CORRECCIÓN
@@ -58,6 +59,7 @@ export class LiquidacionWorkflowService {
         if (estadoActual === EstadoLiquidacion.PAGADA && nuevoEstado !== EstadoLiquidacion.PAGADA) {
             liquidacion.usuario_pagador = null;
             liquidacion.fecha_pago = null;
+            liquidacion.monto_pagado = null;
         }
 
         // ---------------------------------------------------------
@@ -114,8 +116,6 @@ export class LiquidacionWorkflowService {
         if(!liquidacion.total_modificado_manualmente) {
             liquidacion.total_neto_sugerido = liquidacion.total_neto_pagar;
         }
-
-        const totalAnterior = liquidacion.total_neto_pagar;
 
         liquidacion.total_neto_pagar = modificarTotalDto.total_neto_pagar;
         liquidacion.total_modificado_manualmente = true;

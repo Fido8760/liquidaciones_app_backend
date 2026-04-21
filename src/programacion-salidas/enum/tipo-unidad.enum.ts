@@ -1,0 +1,5 @@
+export enum TipoUnidad {
+    TRACTOCAMION="TRACTOCAMION",
+    MUDANCERO="MUDANCERO",
+    CAMIONETA="CAMIONETA"
+}

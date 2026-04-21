@@ -15,6 +15,9 @@ export class Operador {
     @Column({ type: 'varchar', length: 100 })
     apellido_m: string
 
+    @Column({ type: 'boolean', default: true })
+    activo: boolean
+
     @OneToMany(() => Liquidacion, (liquidacion) => liquidacion.operador)
     liquidaciones: Liquidacion[]
 }

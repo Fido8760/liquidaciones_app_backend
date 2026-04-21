@@ -1,20 +1,27 @@
+import { ProgramacionSalida } from 'src/programacion-salidas/entities/programacion-salida.entity'
 import { Liquidacion } from '../../liquidaciones/entities/liquidacion.entity'
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity('unidades')
 export class Unidad {
     @PrimaryGeneratedColumn()
-    id: number
+    id: number;
 
     @Column({ type: 'varchar', length: 100 })
-    no_unidad: string
+    no_unidad: string;
 
     @Column({ type: 'varchar', length: 100 })
-    tipo_unidad: string
+    tipo_unidad: string;
 
     @Column({ type: 'varchar', length: 100 })
-    u_placas: string
+    u_placas: string;
+
+    @Column({ type: 'boolean', default: true })
+    activo: boolean
 
     @OneToMany(() => Liquidacion, (liquidacion) => liquidacion.unidad)
-    liquidaciones: Liquidacion[]
+    liquidaciones: Liquidacion[];
+
+    @OneToMany(() => ProgramacionSalida, (programacionSalida) => programacionSalida.unidad)
+    programacionSalidas: ProgramacionSalida[];
 }

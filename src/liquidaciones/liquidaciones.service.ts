@@ -1,6 +1,6 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, EntityManager, FindManyOptions, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateLiquidacioneDto } from './dto/create-liquidacione.dto';
 import { UpdateLiquidacioneDto } from './dto/update-liquidacione.dto';
 import { Liquidacion } from './entities/liquidacion.entity';
@@ -50,9 +50,9 @@ export class LiquidacionesService {
       ...createLiquidacioneDto,
       unidad,
       operador,
-      fecha_inicio: new Date(createLiquidacioneDto.fecha_inicio),
-      fecha_fin: new Date(createLiquidacioneDto.fecha_fin),
-      fecha_llegada: new Date(createLiquidacioneDto.fecha_llegada),
+      fecha_inicio: createLiquidacioneDto.fecha_inicio,
+      fecha_fin: createLiquidacioneDto.fecha_fin,
+      fecha_llegada: createLiquidacioneDto.fecha_llegada,
       usuario_creador: user,
       comision_porcentaje: comision_porcentaje_inicial,
       comision_estimada: 0,
@@ -72,8 +72,8 @@ export class LiquidacionesService {
     return liquidacion;
   }
 
-  async findAll(unidadId: number | null, take: number, skip: number) {
-    const options: FindManyOptions<Liquidacion> = {
+  async findAll() {
+    const liquidaciones = await this.liquidacionesRepository.find({
       relations: {
         unidad: true,
         operador: true,
@@ -99,24 +99,54 @@ export class LiquidacionesService {
       order: {
         id: 'DESC',
       },
-      take,
-      skip,
-    };
+    });
 
-    if (unidadId) {
-      options.where = {
-        unidad: {
-          id: unidadId,
-        },
-      };
+    return liquidaciones;
+  }
+
+  async findAllLista( take: number, skip: number, filtros?: { operadorId?: number, unidadId?: number, folio?: string, fechaInicio?: string, fechaFin?: string, orden?: 'ASC' | 'DESC' }) {
+    const qb = this.liquidacionesRepository
+      .createQueryBuilder('l')
+      .leftJoinAndSelect('l.unidad', 'unidad')
+      .leftJoinAndSelect('l.operador', 'operador')
+      .leftJoin('l.usuario_creador', 'creador')
+      .leftJoin('l.usuario_editor', 'editor')
+      .addSelect([
+        'creador.id', 'creador.nombre', 'creador.apellido', 'creador.email', 'creador.rol',
+        'editor.id', 'editor.nombre', 'editor.apellido', 'editor.email', 'editor.rol'
+      ])
+      .orderBy('l.id', filtros?.orden ?? 'DESC')
+      .take(take)
+      .skip(skip);
+
+    if (filtros?.operadorId) {
+      qb.andWhere('operador.id = :operadorId', { operadorId: filtros.operadorId });
     }
 
-    const [liquidaciones, total] = await this.liquidacionesRepository.findAndCount(options);
+    if (filtros?.unidadId) {
+      qb.andWhere('unidad.id = :unidadId', { unidadId: filtros.unidadId });
+    }
 
-    return {
-      liquidaciones,
-      total,
-    };
+    if (filtros?.folio) {
+      qb.andWhere('l.folio_liquidacion LIKE :folio', {
+        folio: `%${filtros.folio}%`
+      });
+    }
+
+    if (filtros?.fechaInicio) {
+      qb.andWhere('l.fecha_inicio >= :fechaInicio', {
+        fechaInicio: filtros.fechaInicio
+      });
+    }
+
+    if (filtros?.fechaFin) {
+      qb.andWhere('l.fecha_inicio <= :fechaFin', {
+        fechaFin: filtros.fechaFin
+      });
+    }
+
+    const [liquidaciones, total] = await qb.getManyAndCount();
+    return { liquidaciones, total };
   }
 
   async findOne(id: number) {
@@ -221,9 +251,9 @@ export class LiquidacionesService {
     Object.assign(liquidacion, resto);
 
     // Convierte fechas si vienen en el DTO
-    if (fecha_inicio)  liquidacion.fecha_inicio  = new Date(fecha_inicio);
-    if (fecha_fin)     liquidacion.fecha_fin      = new Date(fecha_fin);
-    if (fecha_llegada) liquidacion.fecha_llegada  = new Date(fecha_llegada);
+    if (fecha_inicio) liquidacion.fecha_inicio = fecha_inicio;
+    if (fecha_fin) liquidacion.fecha_fin = fecha_fin;
+    if (fecha_llegada) liquidacion.fecha_llegada = fecha_llegada;
 
     if (unidadId) {
       const unidad = await this.unidadesRepository.findOneBy({ id: unidadId });

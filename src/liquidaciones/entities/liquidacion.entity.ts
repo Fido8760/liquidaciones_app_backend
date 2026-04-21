@@ -25,13 +25,13 @@ export class Liquidacion {
     folio_liquidacion: string;
 
     @Column({ type: 'date'})
-    fecha_inicio: Date;
+    fecha_inicio: string;
 
     @Column({ type: 'date'})
-    fecha_fin: Date;
+    fecha_fin: string;
 
     @Column({ type: 'date'})
-    fecha_llegada: Date;
+    fecha_llegada: string;
     
     @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
     kilometros_recorridos: number;
@@ -98,6 +98,9 @@ export class Liquidacion {
     
     @Column({ type: 'text', nullable: true})
     motivo_ajuste: string | null;
+
+    @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+    monto_pagado: number | null;
  
     @Column({ type: 'timestamp', nullable: true })
     fecha_pago: Date | null;

@@ -2,6 +2,7 @@ import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, OneToMan
 import { UserRole } from '../enums/roles-usuarios.enum';
 import { Liquidacion } from 'src/liquidaciones/entities/liquidacion.entity';
 import { Nota } from 'src/nota/entities/nota.entity';
+import { ProgramacionSalida } from 'src/programacion-salidas/entities/programacion-salida.entity';
 
 @Entity('usuarios_liquidacion')
 export class User {
@@ -70,4 +71,10 @@ export class User {
 
     @DeleteDateColumn()
     deletedAt: Date;
+
+    @OneToMany(() => ProgramacionSalida, (ps) => ps.creadoPor)
+    programaciones_creadas: ProgramacionSalida[];
+
+    @OneToMany(() => ProgramacionSalida, (ps) => ps.modificadoPor)
+    programaciones_modificadas: ProgramacionSalida[];
 }
