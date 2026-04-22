@@ -19,6 +19,21 @@ export class Unidad {
     @Column({ type: 'boolean', default: true })
     activo: boolean
 
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    u_serie: string
+
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    u_marca: string
+
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    modelo: string
+
+    @Column({ type: 'int', nullable: true })
+    u_anio: number
+
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    no_motor: string
+
     @OneToMany(() => Liquidacion, (liquidacion) => liquidacion.unidad)
     liquidaciones: Liquidacion[];
 

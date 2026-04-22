@@ -18,5 +18,9 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false
+  },
+  "ts-node": {
+    "transpileOnly": true,
+    "files": true
   }
 }
