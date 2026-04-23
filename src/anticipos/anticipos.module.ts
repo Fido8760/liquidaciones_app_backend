@@ -7,7 +7,10 @@ import { Anticipo } from './entities/anticipo.entity';
 import { LiquidacionesModule } from 'src/liquidaciones/liquidaciones.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ Liquidacion, Anticipo]), LiquidacionesModule],
+  imports: [
+    TypeOrmModule.forFeature([Liquidacion, Anticipo]),
+    LiquidacionesModule,
+  ],
   controllers: [AnticiposController],
   providers: [AnticiposService],
 })

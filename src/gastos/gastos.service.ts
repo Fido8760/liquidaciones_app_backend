@@ -14,42 +14,48 @@ import { UploadImageService } from 'src/upload-image/upload-image.service';
 @Injectable()
 export class GastosService {
   constructor(
-    @InjectRepository(Gasto) private readonly gastoRepository: Repository<Gasto>,
-    @InjectRepository(Liquidacion) private readonly liquidacionRepository: Repository<Liquidacion>,
-    @InjectRepository(TipoGasto) private readonly tipoGastoRepository: Repository<TipoGasto>,
+    @InjectRepository(Gasto)
+    private readonly gastoRepository: Repository<Gasto>,
+    @InjectRepository(Liquidacion)
+    private readonly liquidacionRepository: Repository<Liquidacion>,
+    @InjectRepository(TipoGasto)
+    private readonly tipoGastoRepository: Repository<TipoGasto>,
     private readonly liquidacionesService: LiquidacionesService,
     private readonly uploadImageService: UploadImageService,
-    private readonly dataSource: DataSource
+    private readonly dataSource: DataSource,
   ) {}
 
-  async create(createGastoDto: CreateGastoDto, user: User, file?: Express.Multer.File ) {
-
+  async create(
+    createGastoDto: CreateGastoDto,
+    user: User,
+    file?: Express.Multer.File,
+  ) {
     let evidenciaUrl = 'default.pdf';
     let evidenciaPublicId = null;
 
-    if(file) {
+    if (file) {
       const upload = await this.uploadImageService.uploadFile(file);
       evidenciaUrl = upload.secure_url || evidenciaUrl;
       evidenciaPublicId = upload.public_id || null;
     }
 
-    return await this.dataSource.transaction(async manager => {
+    return await this.dataSource.transaction(async (manager) => {
       const liquidacion = await manager.findOne(Liquidacion, {
-        where: { id: createGastoDto.liquidacionId}
+        where: { id: createGastoDto.liquidacionId },
       });
 
-      if(!liquidacion) {
+      if (!liquidacion) {
         throw new NotFoundException('La liquidación no existe');
       }
 
-      validarBloqueoEdicion(liquidacion, user)
+      validarBloqueoEdicion(liquidacion, user);
 
       const tipoGasto = await manager.findOne(TipoGasto, {
-        where: {id: createGastoDto.tipoGastoId, activo: true }
+        where: { id: createGastoDto.tipoGastoId, activo: true },
       });
 
-      if(!tipoGasto){
-        throw new NotFoundException("Tipo de gasto no encontrado")
+      if (!tipoGasto) {
+        throw new NotFoundException('Tipo de gasto no encontrado');
       }
 
       const gasto = manager.create(Gasto, {
@@ -59,22 +65,32 @@ export class GastosService {
         evidencia: evidenciaUrl,
         evidencia_public_id: evidenciaPublicId,
         liquidacion,
-        tipo_gasto: tipoGasto
-      })
+        tipo_gasto: tipoGasto,
+      });
 
-      const saved = await manager.save(gasto)
-      await this.liquidacionesService.recalcularTotales(liquidacion.id, user, manager);
-      await this.liquidacionesService.pasarARevisionSiBorradorConManager(manager,liquidacion.id, user);
+      const saved = await manager.save(gasto);
+      await this.liquidacionesService.recalcularTotales(
+        liquidacion.id,
+        user,
+        manager,
+      );
+      await this.liquidacionesService.pasarARevisionSiBorradorConManager(
+        manager,
+        liquidacion.id,
+        user,
+      );
 
-      return saved
-    })
+      return saved;
+    });
   }
 
-  async findByLiquidacion(liquidacionId: number): Promise<{ data: Gasto[], total: number }> {
+  async findByLiquidacion(
+    liquidacionId: number,
+  ): Promise<{ data: Gasto[]; total: number }> {
     const [data, total] = await this.gastoRepository.findAndCount({
       where: { liquidacion: { id: liquidacionId } },
       relations: ['tipo_gasto'],
-      order: { createdAt: 'DESC'}
+      order: { createdAt: 'DESC' },
     });
 
     return { data, total };
@@ -84,28 +100,33 @@ export class GastosService {
     const gasto = await this.gastoRepository.findOne({
       where: { id },
       relations: ['tipo_gasto', 'liquidacion'],
-    })
+    });
 
-    if(!gasto) throw new NotFoundException('Gasto no encontrado');
-    
+    if (!gasto) throw new NotFoundException('Gasto no encontrado');
+
     return gasto;
   }
 
-  async update(id: number, updateGastoDto: UpdateGastoDto, user: User, file?: Express.Multer.File): Promise<Gasto> {
-    return await this.dataSource.transaction(async manager => {
+  async update(
+    id: number,
+    updateGastoDto: UpdateGastoDto,
+    user: User,
+    file?: Express.Multer.File,
+  ): Promise<Gasto> {
+    return await this.dataSource.transaction(async (manager) => {
       const gasto = await manager.findOne(Gasto, {
         where: { id },
-        relations: ['liquidacion', 'tipo_gasto']
+        relations: ['liquidacion', 'tipo_gasto'],
       });
 
-      if(!gasto){
+      if (!gasto) {
         throw new NotFoundException(`Gasto no encontrado`);
       }
 
       validarBloqueoEdicion(gasto.liquidacion, user);
 
-      if(file) {
-        if(gasto.evidencia_public_id) {
+      if (file) {
+        if (gasto.evidencia_public_id) {
           await this.uploadImageService.deleteFile(gasto.evidencia_public_id);
         }
 
@@ -114,30 +135,34 @@ export class GastosService {
         gasto.evidencia_public_id = upload.public_id;
       }
 
-      if(updateGastoDto.tipoGastoId) {
+      if (updateGastoDto.tipoGastoId) {
         const tipoGasto = await manager.findOne(TipoGasto, {
-          where: { id: updateGastoDto.tipoGastoId, activo: true }
+          where: { id: updateGastoDto.tipoGastoId, activo: true },
         });
 
-        if(!tipoGasto) {
+        if (!tipoGasto) {
           throw new NotFoundException('tipo de gasto no encontrado');
         }
 
         gasto.tipo_gasto = tipoGasto;
       }
 
-      Object.assign(gasto, updateGastoDto)
+      Object.assign(gasto, updateGastoDto);
 
       const liquidacionId = gasto.liquidacion.id;
       const saved = await manager.save(gasto);
-      await this.liquidacionesService.recalcularTotales(liquidacionId, user, manager)
+      await this.liquidacionesService.recalcularTotales(
+        liquidacionId,
+        user,
+        manager,
+      );
 
       return saved;
     });
   }
 
   async remove(id: number, user: User): Promise<{ message: string }> {
-    return await this.dataSource.transaction(async manager => {
+    return await this.dataSource.transaction(async (manager) => {
       const gasto = await manager.findOne(Gasto, {
         where: { id },
         relations: ['liquidacion'],
@@ -149,26 +174,30 @@ export class GastosService {
 
       validarBloqueoEdicion(gasto.liquidacion, user);
 
-      if(gasto.evidencia_public_id) {
+      if (gasto.evidencia_public_id) {
         await this.uploadImageService.deleteFile(gasto.evidencia_public_id);
       }
 
       const liquidacionId = gasto.liquidacion.id;
       await manager.remove(Gasto, gasto);
-      await this.liquidacionesService.recalcularTotales(liquidacionId, user, manager);
+      await this.liquidacionesService.recalcularTotales(
+        liquidacionId,
+        user,
+        manager,
+      );
 
       return { message: 'Gasto eliminado correctamente' };
     });
   }
 
   async toggleAfectaOperador(id: number, user: User): Promise<Gasto> {
-    return await this.dataSource.transaction(async manager => {
+    return await this.dataSource.transaction(async (manager) => {
       const gasto = await manager.findOne(Gasto, {
         where: { id },
-        relations: ['liquidacion']
+        relations: ['liquidacion'],
       });
 
-      if(!gasto) throw new NotFoundException('Gasto no encontrado');
+      if (!gasto) throw new NotFoundException('Gasto no encontrado');
 
       validarBloqueoEdicion(gasto.liquidacion, user);
 
@@ -176,9 +205,13 @@ export class GastosService {
 
       const liquidacionId = gasto.liquidacion.id;
       const saved = await manager.save(Gasto, gasto);
-      await this.liquidacionesService.recalcularTotales(liquidacionId, user, manager);
+      await this.liquidacionesService.recalcularTotales(
+        liquidacionId,
+        user,
+        manager,
+      );
 
       return saved;
-    })
+    });
   }
 }

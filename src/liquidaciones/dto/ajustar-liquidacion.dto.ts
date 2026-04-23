@@ -1,7 +1,15 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString, Max, MaxLength, Min, ValidateIf } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+  ValidateIf,
+} from 'class-validator';
 
 export class AjustarLiquidacionDto {
-  
   @IsNumber({}, { message: 'El rendimiento tabulado debe ser un número.' })
   @Min(0, { message: 'El rendimiento tabulado no puede ser negativo.' })
   @IsNotEmpty({ message: 'El rendimiento tabulado es obligatorio.' })
@@ -19,13 +27,17 @@ export class AjustarLiquidacionDto {
 
   @IsOptional()
   @IsString({ message: 'El motivo del ajuste debe ser texto.' })
-  @MaxLength(500, { message: 'El motivo del ajuste no puede tener más de 500 caracteres.' })
-  @ValidateIf(o => o.ajuste_manual && o.ajuste_manual !== 0)
-  @IsNotEmpty({ message: 'Debe proporcionar un motivo cuando hay un ajuste manual.' })
+  @MaxLength(500, {
+    message: 'El motivo del ajuste no puede tener más de 500 caracteres.',
+  })
+  @ValidateIf((o) => o.ajuste_manual && o.ajuste_manual !== 0)
+  @IsNotEmpty({
+    message: 'Debe proporcionar un motivo cuando hay un ajuste manual.',
+  })
   motivo_ajuste?: string;
 
   @IsOptional()
-  @IsNumber({}, {message: 'El costo del ferry debe ser numero'})
-  @Min(0,  {message: 'La cantidad no puede ser negativa' })
-  gasto_ferry? :number
+  @IsNumber({}, { message: 'El costo del ferry debe ser numero' })
+  @Min(0, { message: 'La cantidad no puede ser negativa' })
+  gasto_ferry?: number;
 }

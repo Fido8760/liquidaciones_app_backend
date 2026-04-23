@@ -1,7 +1,11 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { LoginDto } from './dto/login.dto'; 
+import { LoginDto } from './dto/login.dto';
 import { User } from 'src/users/entities/user.entity';
 import { checkPassword, hashPassword } from 'src/utils/auth';
 import { JwtService } from '@nestjs/jwt';
@@ -13,71 +17,73 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
-
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
-    private readonly authemail: AuthEmail
+    private readonly authemail: AuthEmail,
   ) {}
 
-
   async login(loginDto: LoginDto) {
-
     const { email, password } = loginDto;
-    const user = await this.userRepository.findOne({ where: { email }})
+    const user = await this.userRepository.findOne({ where: { email } });
 
-    if ( !user ) {
+    if (!user) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
     const isPasswordCorrect = await checkPassword(password, user.password);
-    if ( !isPasswordCorrect ) {
+    if (!isPasswordCorrect) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    if ( !user.activo ) {
+    if (!user.activo) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    const token = this.jwtService.sign({ id: user.id })
+    const token = this.jwtService.sign({ id: user.id });
 
     return token;
   }
 
-  async forgotPass( forgotPasswordDto: ForgotPasswordDto ) {
+  async forgotPass(forgotPasswordDto: ForgotPasswordDto) {
     const { email } = forgotPasswordDto;
-    const user = await this.userRepository.findOne({ where: { email }})
-    if ( !user ) return { message: ('Si el correo existe, se enviarán las instrucciones al correo proporcionado.') };
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user)
+      return {
+        message:
+          'Si el correo existe, se enviarán las instrucciones al correo proporcionado.',
+      };
     user.token = generateToken();
     await this.userRepository.save(user);
     await this.authemail.sendForgotEmail({
       name: user.nombre,
       email: user.email,
-      token: user.token
-    })
-    return { message: ('Si el correo existe, se enviarán las instrucciones al correo proporcionado.') };
-
+      token: user.token,
+    });
+    return {
+      message:
+        'Si el correo existe, se enviarán las instrucciones al correo proporcionado.',
+    };
   }
 
   async validateToken(validateTokenDto: ValidateTokenDto) {
     const { token } = validateTokenDto;
-    const tokenExists = await this.userRepository.findOne({ where: { token }})
-    if( !tokenExists ) {
-      throw new UnauthorizedException('Token no válido')
+    const tokenExists = await this.userRepository.findOne({ where: { token } });
+    if (!tokenExists) {
+      throw new UnauthorizedException('Token no válido');
     }
     return { message: 'Token válido' };
   }
 
-  async resetPassword( token: string, resetPasswordDto: ResetPasswordDto) {
-
+  async resetPassword(token: string, resetPasswordDto: ResetPasswordDto) {
     const { password, confirmPassword } = resetPasswordDto;
 
-    if( password !== confirmPassword ) {
+    if (password !== confirmPassword) {
       throw new BadRequestException('Las contraseñas no coinciden');
     }
 
-    const user = await this.userRepository.findOne({ where: { token }})
-    if( !user ) {
+    const user = await this.userRepository.findOne({ where: { token } });
+    if (!user) {
       throw new UnauthorizedException('Token no válido');
     }
 
@@ -86,12 +92,10 @@ export class AuthService {
 
     await this.userRepository.save(user);
 
-    return { message: 'Contraseña actualizada correctamente'}
-
+    return { message: 'Contraseña actualizada correctamente' };
   }
 
-  async getUserById( id: number ) {
+  async getUserById(id: number) {
     return this.userRepository.findOne({ where: { id } });
-  } 
-  
+  }
 }

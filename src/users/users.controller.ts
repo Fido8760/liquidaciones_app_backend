@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, ParseIntPipe, Put, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  UseGuards,
+  ParseIntPipe,
+  Put,
+  Patch,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -14,10 +25,7 @@ export class UsersController {
 
   @Post()
   @Roles(UserRole.SISTEMAS)
-  create(
-    @Body() createUserDto: CreateUserDto,
-    @GetUser() user: User
-  ) {
+  create(@Body() createUserDto: CreateUserDto, @GetUser() user: User) {
     return this.usersService.create(createUserDto, user);
   }
 
@@ -36,18 +44,16 @@ export class UsersController {
   @Put(':id')
   @Roles(UserRole.SISTEMAS)
   update(
-    @Param('id') id: string, 
+    @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
-    @GetUser() user: User
+    @GetUser() user: User,
   ) {
     return this.usersService.update(+id, updateUserDto, user);
   }
 
   @Delete(':id')
-  remove(
-    @Param('id') id: string,
-    @GetUser() user: User
-  ) {
+  @Roles(UserRole.SISTEMAS)
+  remove(@Param('id') id: string, @GetUser() user: User) {
     return this.usersService.remove(+id, user);
   }
 
@@ -56,8 +62,8 @@ export class UsersController {
   cambiarEstado(
     @Param('id', ParseIntPipe) id: number,
     @Body() cambiarEstadoUsuarioDTO: CambiarEstadoUsuarioDTO,
-    @GetUser() user: User
+    @GetUser() user: User,
   ) {
-    return this.usersService.cambiarEstado(id, cambiarEstadoUsuarioDTO, user)
+    return this.usersService.cambiarEstado(id, cambiarEstadoUsuarioDTO, user);
   }
 }

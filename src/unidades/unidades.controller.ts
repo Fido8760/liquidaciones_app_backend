@@ -1,7 +1,6 @@
 import { Controller, Get, Param, Delete } from '@nestjs/common';
 import { UnidadesService } from './unidades.service';
 
-
 @Controller('unidades')
 export class UnidadesController {
   constructor(private readonly unidadesService: UnidadesService) {}
@@ -15,5 +14,4 @@ export class UnidadesController {
   findOne(@Param('id') id: string) {
     return this.unidadesService.findOne(+id);
   }
-
 }

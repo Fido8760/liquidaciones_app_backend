@@ -15,9 +15,25 @@ import { LiquidacionWorkflowService } from './services/liquidacion-workflow.serv
 import { Gasto } from 'src/gastos/entities/gasto.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Liquidacion, Unidad, Operador, GastoCombustible, Flete, Anticipo, User, Gasto])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Liquidacion,
+      Unidad,
+      Operador,
+      GastoCombustible,
+      Flete,
+      Anticipo,
+      User,
+      Gasto,
+    ]),
+  ],
   controllers: [LiquidacionesController],
-  providers: [LiquidacionesService, LiquidacionCalculosService, LiquidacionValidacionesService, LiquidacionWorkflowService],
-  exports: [LiquidacionesService]
+  providers: [
+    LiquidacionesService,
+    LiquidacionCalculosService,
+    LiquidacionValidacionesService,
+    LiquidacionWorkflowService,
+  ],
+  exports: [LiquidacionesService],
 })
 export class LiquidacionesModule {}

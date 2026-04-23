@@ -7,6 +7,6 @@ export class AppService {
   }
 
   postHello() {
-    return 'Desde @post en el service'
+    return 'Desde @post en el service';
   }
 }

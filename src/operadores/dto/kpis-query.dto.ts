@@ -1,11 +1,11 @@
-import { IsDateString, IsOptional } from "class-validator";
+import { IsDateString, IsOptional } from 'class-validator';
 
 export class GetKpisQueryDto {
-    @IsOptional()
-    @IsDateString()
-    fechaInicio?: string;
+  @IsOptional()
+  @IsDateString()
+  fechaInicio?: string;
 
-    @IsOptional()
-    @IsDateString()
-    fechaFin?: string;
+  @IsOptional()
+  @IsDateString()
+  fechaFin?: string;
 }

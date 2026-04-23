@@ -9,7 +9,11 @@ import { LiquidacionesModule } from 'src/liquidaciones/liquidaciones.module';
 import { UploadImageModule } from 'src/upload-image/upload-image.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Gasto, TipoGasto, Liquidacion]), LiquidacionesModule, UploadImageModule],
+  imports: [
+    TypeOrmModule.forFeature([Gasto, TipoGasto, Liquidacion]),
+    LiquidacionesModule,
+    UploadImageModule,
+  ],
   controllers: [GastosController],
   providers: [GastosService],
 })

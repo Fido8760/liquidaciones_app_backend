@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Param, Delete, Query, Put, Patch, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Query,
+  Put,
+  Patch,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { LiquidacionesService } from './liquidaciones.service';
 import { CreateLiquidacioneDto } from './dto/create-liquidacione.dto';
 import { UpdateLiquidacioneDto } from './dto/update-liquidacione.dto';
@@ -20,19 +31,29 @@ export class LiquidacionesController {
   @Roles(UserRole.CAPTURISTA, UserRole.SISTEMAS)
   create(
     @Body() createLiquidacioneDto: CreateLiquidacioneDto,
-    @GetUser() user: User
+    @GetUser() user: User,
   ) {
     return this.liquidacionesService.create(createLiquidacioneDto, user);
   }
 
   @Get()
-  @Roles(UserRole.CAPTURISTA, UserRole.DIRECTOR, UserRole.ADMIN, UserRole.SISTEMAS)
+  @Roles(
+    UserRole.CAPTURISTA,
+    UserRole.DIRECTOR,
+    UserRole.ADMIN,
+    UserRole.SISTEMAS,
+  )
   findAll() {
     return this.liquidacionesService.findAll();
   }
 
   @Get('lista')
-  @Roles(UserRole.CAPTURISTA, UserRole.DIRECTOR, UserRole.ADMIN, UserRole.SISTEMAS)
+  @Roles(
+    UserRole.CAPTURISTA,
+    UserRole.DIRECTOR,
+    UserRole.ADMIN,
+    UserRole.SISTEMAS,
+  )
   findAllLista(@Query() query: GetLiquidacionQueryDto) {
     const take = query.limit ? +query.limit : 10;
     const skip = query.page ? (+query.page - 1) * take : 0;
@@ -47,7 +68,12 @@ export class LiquidacionesController {
   }
 
   @Get(':id')
-  @Roles(UserRole.CAPTURISTA, UserRole.DIRECTOR, UserRole.ADMIN, UserRole.SISTEMAS)
+  @Roles(
+    UserRole.CAPTURISTA,
+    UserRole.DIRECTOR,
+    UserRole.ADMIN,
+    UserRole.SISTEMAS,
+  )
   findOne(@Param('id', ValidarIdPipe) id: string) {
     return this.liquidacionesService.findOne(+id);
   }
@@ -55,28 +81,30 @@ export class LiquidacionesController {
   @Put(':id')
   @Roles(UserRole.CAPTURISTA, UserRole.SISTEMAS)
   update(
-    @Param('id', ValidarIdPipe) id: string, 
+    @Param('id', ValidarIdPipe) id: string,
     @Body() updateLiquidacioneDto: UpdateLiquidacioneDto,
-    @GetUser() user: User
+    @GetUser() user: User,
   ) {
     return this.liquidacionesService.update(+id, updateLiquidacioneDto, user);
   }
 
   @Delete(':id')
   @Roles(UserRole.CAPTURISTA, UserRole.SISTEMAS)
-  remove(
-    @Param('id', ValidarIdPipe) id: string,
-    @GetUser() user: User
-  ) {
+  remove(@Param('id', ValidarIdPipe) id: string, @GetUser() user: User) {
     return this.liquidacionesService.remove(+id, user);
   }
 
   @Patch(':id/estado')
-  @Roles(UserRole.CAPTURISTA, UserRole.SISTEMAS, UserRole.ADMIN, UserRole.DIRECTOR)
+  @Roles(
+    UserRole.CAPTURISTA,
+    UserRole.SISTEMAS,
+    UserRole.ADMIN,
+    UserRole.DIRECTOR,
+  )
   cambiarEstado(
     @Param('id', ValidarIdPipe) id: string,
     @Body() cambiarEstadoDto: CambiarEstadoDto,
-    @GetUser() user: User
+    @GetUser() user: User,
   ) {
     return this.liquidacionesService.cambiarEstado(+id, cambiarEstadoDto, user);
   }
@@ -86,9 +114,13 @@ export class LiquidacionesController {
   ajustarLiquidacion(
     @Param('id', ParseIntPipe) id: string,
     @Body() ajustarLiquidacionDto: AjustarLiquidacionDto,
-    @GetUser() user: User
+    @GetUser() user: User,
   ) {
-    return this.liquidacionesService.ajustarLiquidacion(+id, ajustarLiquidacionDto, user);
+    return this.liquidacionesService.ajustarLiquidacion(
+      +id,
+      ajustarLiquidacionDto,
+      user,
+    );
   }
 
   @Patch(':id/modificar-total-pago')
@@ -96,9 +128,12 @@ export class LiquidacionesController {
   modificarTotalPago(
     @Param('id', ValidarIdPipe) id: string,
     @Body() modificartotalDto: ModificarTotalDto,
-    @GetUser() user: User
+    @GetUser() user: User,
   ) {
-    return this.liquidacionesService.modificarTotalPago(+id, modificartotalDto, user);
+    return this.liquidacionesService.modificarTotalPago(
+      +id,
+      modificartotalDto,
+      user,
+    );
   }
-
 }

@@ -1,4 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseInterceptors, UploadedFile, ParseFilePipe, FileTypeValidator, MaxFileSizeValidator } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Put,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  FileTypeValidator,
+  MaxFileSizeValidator,
+} from '@nestjs/common';
 import { GastosService } from './gastos.service';
 import { CreateGastoDto } from './dto/create-gasto.dto';
 import { UpdateGastoDto } from './dto/update-gasto.dto';
@@ -22,18 +36,21 @@ export class GastosController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new FileTypeValidator({ fileType: /(jpg|jpeg|png|webp|pdf)$/}),
-          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 })
+          new FileTypeValidator({ fileType: /(jpg|jpeg|png|webp|pdf)$/ }),
+          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }),
         ],
-        fileIsRequired: false
-      })
-    ) file?: Express.Multer.File
+        fileIsRequired: false,
+      }),
+    )
+    file?: Express.Multer.File,
   ) {
     return this.gastosService.create(createGastoDto, user, file);
   }
 
   @Get('liquidacion/:liquidacionId')
-  findByLiquidacion(@Param('liquidacionId', ValidarIdPipe) liquidacionId: string) {
+  findByLiquidacion(
+    @Param('liquidacionId', ValidarIdPipe) liquidacionId: string,
+  ) {
     return this.gastosService.findByLiquidacion(+liquidacionId);
   }
 
@@ -46,18 +63,19 @@ export class GastosController {
   @Roles(UserRole.SISTEMAS, UserRole.CAPTURISTA)
   @UseInterceptors(FileInterceptor('file'))
   update(
-    @Param('id') id: string, 
+    @Param('id') id: string,
     @Body() updateGastoDto: UpdateGastoDto,
     @GetUser() user: User,
     @UploadedFile(
       new ParseFilePipe({
-        validators: [ 
+        validators: [
           new FileTypeValidator({ fileType: /(jpg|jpeg|png|webp|pdf)$/ }),
           new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }),
         ],
-        fileIsRequired: false
-      })
-    ) file?: Express.Multer.File
+        fileIsRequired: false,
+      }),
+    )
+    file?: Express.Multer.File,
   ) {
     return this.gastosService.update(+id, updateGastoDto, user, file);
   }
@@ -65,15 +83,15 @@ export class GastosController {
   @Delete(':id')
   @Roles(UserRole.SISTEMAS, UserRole.CAPTURISTA)
   remove(@Param('id', ValidarIdPipe) id: number, @GetUser() user: User) {
-      return this.gastosService.remove(id, user);
+    return this.gastosService.remove(id, user);
   }
 
   @Patch(':id/toggle-afecta-operador')
   @Roles(UserRole.CAPTURISTA, UserRole.SISTEMAS)
   toggleAfectaOperador(
     @Param('id', ValidarIdPipe) id: string,
-    @GetUser() user: User
-  ){
+    @GetUser() user: User,
+  ) {
     return this.gastosService.toggleAfectaOperador(+id, user);
   }
 }

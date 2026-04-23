@@ -11,47 +11,53 @@ import { Liquidacion } from 'src/liquidaciones/entities/liquidacion.entity';
 export class NotaService {
   constructor(
     @InjectRepository(Nota) private readonly notaRespository: Repository<Nota>,
-    @InjectRepository(Liquidacion) private readonly liquidacionRespository: Repository<Liquidacion>
+    @InjectRepository(Liquidacion)
+    private readonly liquidacionRespository: Repository<Liquidacion>,
   ) {}
-  async create(createNotaDto: CreateNotaDto, user: User, liquidacionId: number) {
-    const liquidacion = await this.liquidacionRespository.findOneBy({ id: liquidacionId });
+  async create(
+    createNotaDto: CreateNotaDto,
+    user: User,
+    liquidacionId: number,
+  ) {
+    const liquidacion = await this.liquidacionRespository.findOneBy({
+      id: liquidacionId,
+    });
     if (!liquidacion) {
-      throw new NotFoundException('La liquidación no existe')
+      throw new NotFoundException('La liquidación no existe');
     }
 
     const nota = this.notaRespository.create({
       contenido: createNotaDto.contenido,
       usuario: user,
-      liquidacion: liquidacion
+      liquidacion: liquidacion,
     });
 
     await this.notaRespository.save(nota);
-    return { message: 'Nota creada', nota }
-
+    return { message: 'Nota creada', nota };
   }
 
   async findAll(liquidacionId: number) {
     return this.notaRespository.find({
       where: {
         liquidacion: {
-          id: liquidacionId
-        }
+          id: liquidacionId,
+        },
       },
       relations: {
-        usuario: true
+        usuario: true,
       },
       select: {
         usuario: {
           id: true,
           nombre: true,
           apellido: true,
-          email: true
-        }
+          email: true,
+        },
       },
       order: {
-        createdAt: 'ASC'
-      }
-    })
+        createdAt: 'ASC',
+      },
+    });
   }
 
   findOne(id: number) {

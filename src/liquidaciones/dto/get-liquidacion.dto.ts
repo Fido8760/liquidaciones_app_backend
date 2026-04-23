@@ -1,9 +1,14 @@
 // src/liquidaciones/dto/get-liquidaciones-lista.dto.ts
 
-import { IsDateString, IsIn, IsNumberString, IsOptional, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsIn,
+  IsNumberString,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class GetLiquidacionQueryDto {
-
   @IsOptional()
   @IsNumberString({}, { message: 'El operador debe ser un número' })
   operadorId?: string;
@@ -13,7 +18,10 @@ export class GetLiquidacionQueryDto {
   folio?: string;
 
   @IsOptional()
-  @IsDateString({}, { message: 'La fecha inicio debe tener formato YYYY-MM-DD' })
+  @IsDateString(
+    {},
+    { message: 'La fecha inicio debe tener formato YYYY-MM-DD' },
+  )
   fechaInicio?: string;
 
   @IsOptional()

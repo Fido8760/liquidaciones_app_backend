@@ -9,7 +9,6 @@ import { GetKpisQueryDto } from './dto/kpis-query.dto';
 export class OperadoresController {
   constructor(private readonly operadoresService: OperadoresService) {}
 
-
   @Get()
   findAll() {
     return this.operadoresService.findAll();
@@ -19,23 +18,30 @@ export class OperadoresController {
   @Roles(UserRole.DIRECTOR, UserRole.ADMIN, UserRole.SISTEMAS)
   getKpis(
     @Param('id', ValidarIdPipe) id: string,
-    @Query() query:GetKpisQueryDto,
+    @Query() query: GetKpisQueryDto,
   ) {
-    return this.operadoresService.getKpisOperador(+id, query.fechaInicio, query.fechaFin);
+    return this.operadoresService.getKpisOperador(
+      +id,
+      query.fechaInicio,
+      query.fechaFin,
+    );
   }
 
   @Get(':id/liquidaciones')
   @Roles(UserRole.DIRECTOR, UserRole.ADMIN, UserRole.SISTEMAS)
   getLiquidaciones(
-      @Param('id', ValidarIdPipe) id: string,
-      @Query() query: GetKpisQueryDto,
+    @Param('id', ValidarIdPipe) id: string,
+    @Query() query: GetKpisQueryDto,
   ) {
-      return this.operadoresService.getLiquidacionesOperador(+id, query.fechaInicio, query.fechaFin)
+    return this.operadoresService.getLiquidacionesOperador(
+      +id,
+      query.fechaInicio,
+      query.fechaFin,
+    );
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.operadoresService.findOne(+id);
   }
-
 }

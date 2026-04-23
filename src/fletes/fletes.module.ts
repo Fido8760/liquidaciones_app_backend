@@ -7,7 +7,10 @@ import { Flete } from './entities/flete.entity';
 import { LiquidacionesModule } from 'src/liquidaciones/liquidaciones.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ Liquidacion, Flete ]), LiquidacionesModule],
+  imports: [
+    TypeOrmModule.forFeature([Liquidacion, Flete]),
+    LiquidacionesModule,
+  ],
   controllers: [FletesController],
   providers: [FletesService],
 })

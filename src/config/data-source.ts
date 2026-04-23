@@ -1,6 +1,6 @@
-import { DataSource } from "typeorm";
-import * as path from "path";
-import * as dotenv from 'dotenv'
+import { DataSource } from 'typeorm';
+import * as path from 'path';
+import * as dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -15,4 +15,4 @@ export const AppDataSource = new DataSource({
   entities: [path.resolve(process.cwd(), 'src', '**', '*.entity.{js,ts}')],
   migrations: [path.resolve(process.cwd(), 'src', 'migrations', '*.{js,ts}')],
   synchronize: false,
-})
+});

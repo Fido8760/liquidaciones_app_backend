@@ -1,7 +1,7 @@
-import { IsDateString, IsOptional } from "class-validator";
+import { IsDateString, IsOptional } from 'class-validator';
 
 export class GetSalidaDiaQueryDto {
-    @IsOptional()
-    @IsDateString({}, { message: 'La fecha debe tener formato YYYY-MM-DD' })
-    fecha?: string
+  @IsOptional()
+  @IsDateString({}, { message: 'La fecha debe tener formato YYYY-MM-DD' })
+  fecha?: string;
 }

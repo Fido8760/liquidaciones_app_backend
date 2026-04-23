@@ -12,11 +12,11 @@ export class AppController {
 
   @Post()
   getPost() {
-    return this.appService.postHello()
+    return this.appService.postHello();
   }
 
   @Put()
   putPost() {
-    return "Desde @put"
+    return 'Desde @put';
   }
 }

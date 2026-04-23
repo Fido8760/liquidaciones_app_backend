@@ -18,11 +18,14 @@ import { obtenerPorcentajeComisionDefault } from './utils/porcentaje-comision.ut
 @Injectable()
 export class LiquidacionesService {
   constructor(
-    @InjectRepository(Liquidacion) private readonly liquidacionesRepository: Repository<Liquidacion>,
-    @InjectRepository(Unidad) private readonly unidadesRepository: Repository<Unidad>,
-    @InjectRepository(Operador) private readonly operadoresRepository: Repository<Operador>,
+    @InjectRepository(Liquidacion)
+    private readonly liquidacionesRepository: Repository<Liquidacion>,
+    @InjectRepository(Unidad)
+    private readonly unidadesRepository: Repository<Unidad>,
+    @InjectRepository(Operador)
+    private readonly operadoresRepository: Repository<Operador>,
     private readonly calculosService: LiquidacionCalculosService,
-    private readonly workflowService: LiquidacionWorkflowService
+    private readonly workflowService: LiquidacionWorkflowService,
   ) {}
 
   async create(createLiquidacioneDto: CreateLiquidacioneDto, user: User) {
@@ -43,10 +46,10 @@ export class LiquidacionesService {
     }
 
     const tipoUnidad = unidad.tipo_unidad?.toUpperCase() || '';
-    const comision_porcentaje_inicial = obtenerPorcentajeComisionDefault(tipoUnidad);
+    const comision_porcentaje_inicial =
+      obtenerPorcentajeComisionDefault(tipoUnidad);
 
-
-    const liquidacionData: Partial<Liquidacion> = ({
+    const liquidacionData: Partial<Liquidacion> = {
       ...createLiquidacioneDto,
       unidad,
       operador,
@@ -66,9 +69,10 @@ export class LiquidacionesService {
       total_bruto: 0,
       total_neto_pagar: 0,
       utilidad_viaje: 0,
-    });
+    };
 
-    const liquidacion = await this.liquidacionesRepository.save(liquidacionData)
+    const liquidacion =
+      await this.liquidacionesRepository.save(liquidacionData);
     return liquidacion;
   }
 
@@ -104,7 +108,18 @@ export class LiquidacionesService {
     return liquidaciones;
   }
 
-  async findAllLista( take: number, skip: number, filtros?: { operadorId?: number, unidadId?: number, folio?: string, fechaInicio?: string, fechaFin?: string, orden?: 'ASC' | 'DESC' }) {
+  async findAllLista(
+    take: number,
+    skip: number,
+    filtros?: {
+      operadorId?: number;
+      unidadId?: number;
+      folio?: string;
+      fechaInicio?: string;
+      fechaFin?: string;
+      orden?: 'ASC' | 'DESC';
+    },
+  ) {
     const qb = this.liquidacionesRepository
       .createQueryBuilder('l')
       .leftJoinAndSelect('l.unidad', 'unidad')
@@ -112,15 +127,25 @@ export class LiquidacionesService {
       .leftJoin('l.usuario_creador', 'creador')
       .leftJoin('l.usuario_editor', 'editor')
       .addSelect([
-        'creador.id', 'creador.nombre', 'creador.apellido', 'creador.email', 'creador.rol',
-        'editor.id', 'editor.nombre', 'editor.apellido', 'editor.email', 'editor.rol'
+        'creador.id',
+        'creador.nombre',
+        'creador.apellido',
+        'creador.email',
+        'creador.rol',
+        'editor.id',
+        'editor.nombre',
+        'editor.apellido',
+        'editor.email',
+        'editor.rol',
       ])
       .orderBy('l.id', filtros?.orden ?? 'DESC')
       .take(take)
       .skip(skip);
 
     if (filtros?.operadorId) {
-      qb.andWhere('operador.id = :operadorId', { operadorId: filtros.operadorId });
+      qb.andWhere('operador.id = :operadorId', {
+        operadorId: filtros.operadorId,
+      });
     }
 
     if (filtros?.unidadId) {
@@ -129,19 +154,19 @@ export class LiquidacionesService {
 
     if (filtros?.folio) {
       qb.andWhere('l.folio_liquidacion LIKE :folio', {
-        folio: `%${filtros.folio}%`
+        folio: `%${filtros.folio}%`,
       });
     }
 
     if (filtros?.fechaInicio) {
       qb.andWhere('l.fecha_inicio >= :fechaInicio', {
-        fechaInicio: filtros.fechaInicio
+        fechaInicio: filtros.fechaInicio,
       });
     }
 
     if (filtros?.fechaFin) {
       qb.andWhere('l.fecha_inicio <= :fechaFin', {
-        fechaFin: filtros.fechaFin
+        fechaFin: filtros.fechaFin,
       });
     }
 
@@ -190,28 +215,28 @@ export class LiquidacionesService {
           nombre: true,
           apellido: true,
           email: true,
-          rol: true
+          rol: true,
         },
         usuario_pagador: {
           id: true,
           nombre: true,
           apellido: true,
           email: true,
-          rol: true
+          rol: true,
         },
         usuario_modificador_total: {
           id: true,
           nombre: true,
           apellido: true,
           email: true,
-          rol: true
+          rol: true,
         },
         usuario_modificador_comision: {
           id: true,
           nombre: true,
           apellido: true,
           email: true,
-          rol: true
+          rol: true,
         },
         notas: {
           id: true,
@@ -224,7 +249,6 @@ export class LiquidacionesService {
             email: true,
           },
         },
-        
       },
       order: {
         notas: {
@@ -239,13 +263,24 @@ export class LiquidacionesService {
     return liquidacion;
   }
 
-  async update(id: number, updateLiquidacionDto: UpdateLiquidacioneDto, user: User) {
+  async update(
+    id: number,
+    updateLiquidacionDto: UpdateLiquidacioneDto,
+    user: User,
+  ) {
     const liquidacion = await this.findOne(id);
 
     validarBloqueoEdicion(liquidacion, user);
 
     // Desestructura los campos que manejas aparte
-    const { fecha_inicio, fecha_fin, fecha_llegada, unidadId, operadorId, ...resto } = updateLiquidacionDto;
+    const {
+      fecha_inicio,
+      fecha_fin,
+      fecha_llegada,
+      unidadId,
+      operadorId,
+      ...resto
+    } = updateLiquidacionDto;
 
     // Asigna solo los campos planos
     Object.assign(liquidacion, resto);
@@ -262,7 +297,9 @@ export class LiquidacionesService {
     }
 
     if (operadorId) {
-      const operador = await this.operadoresRepository.findOneBy({ id: operadorId });
+      const operador = await this.operadoresRepository.findOneBy({
+        id: operadorId,
+      });
       if (!operador) throw new NotFoundException('El operador no existe');
       liquidacion.operador = operador;
     }
@@ -292,8 +329,16 @@ export class LiquidacionesService {
     return this.workflowService.pasarARevisionSiBorrador(liquidacionId, user);
   }
 
-  async pasarARevisionSiBorradorConManager(manager: any, liquidacionId: number, user?: User) {
-    return this.workflowService.pasarARevisionSiBorradorConManager(manager, liquidacionId, user);
+  async pasarARevisionSiBorradorConManager(
+    manager: any,
+    liquidacionId: number,
+    user?: User,
+  ) {
+    return this.workflowService.pasarARevisionSiBorradorConManager(
+      manager,
+      liquidacionId,
+      user,
+    );
   }
 
   async cambiarEstado(id: number, dto: CambiarEstadoDto, user: User) {

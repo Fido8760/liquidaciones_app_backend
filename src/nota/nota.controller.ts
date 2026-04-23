@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { NotaService } from './nota.service';
 import { CreateNotaDto } from './dto/create-nota.dto';
 import { UpdateNotaDto } from './dto/update-nota.dto';
@@ -13,15 +22,13 @@ export class NotaController {
   create(
     @Param('liquidacionId', ParseIntPipe) liquidacionId: number,
     @Body() createNotaDto: CreateNotaDto,
-    @GetUser() user: User
+    @GetUser() user: User,
   ) {
     return this.notaService.create(createNotaDto, user, liquidacionId);
   }
 
   @Get()
-  findAll(
-    @Param('liquidacionId', ParseIntPipe) liquidacionId: number,
-  ) {
+  findAll(@Param('liquidacionId', ParseIntPipe) liquidacionId: number) {
     return this.notaService.findAll(liquidacionId);
   }
 

@@ -9,19 +9,21 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from 'src/users/users.module';
 
-
 @Module({
-  imports: [ConfigModule,TypeOrmModule.forFeature([User]), JwtModule.registerAsync({
-    imports: [ConfigModule],
-    inject: [ConfigService],
+  imports: [
+    ConfigModule,
+    TypeOrmModule.forFeature([User]),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
 
-    useFactory: async (config: ConfigService) => ({
-      secret: config.get<string>('JWT_SECRET'),
-      signOptions: { expiresIn: '7d' }
-    })
-  }),
-  AuthEmailModule,
-  UsersModule
+      useFactory: async (config: ConfigService) => ({
+        secret: config.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '7d' },
+      }),
+    }),
+    AuthEmailModule,
+    UsersModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

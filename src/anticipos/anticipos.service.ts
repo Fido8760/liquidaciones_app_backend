@@ -12,106 +12,123 @@ import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class AnticiposService {
-
   constructor(
-    @InjectRepository(Anticipo) private readonly anticiposRepoitory : Repository<Anticipo>,
-    @InjectRepository(Liquidacion) private readonly liquidacionesRepository : Repository<Liquidacion>,
-    private readonly liquidacionesService : LiquidacionesService,
-    private readonly dataSource: DataSource
+    @InjectRepository(Anticipo)
+    private readonly anticiposRepoitory: Repository<Anticipo>,
+    @InjectRepository(Liquidacion)
+    private readonly liquidacionesRepository: Repository<Liquidacion>,
+    private readonly liquidacionesService: LiquidacionesService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(createAnticipoDto: CreateAnticipoDto, user: User) {
-
-    return await this.dataSource.transaction(async manager => {
+    return await this.dataSource.transaction(async (manager) => {
       const liquidacion = await manager.findOne(Liquidacion, {
         where: {
-          id: createAnticipoDto.liquidacionId
-        }
-      })
+          id: createAnticipoDto.liquidacionId,
+        },
+      });
 
-      if(!liquidacion) {
+      if (!liquidacion) {
         throw new NotFoundException('La liquidación no existe');
       }
-  
-      validarBloqueoEdicion(liquidacion, user)
-  
+
+      validarBloqueoEdicion(liquidacion, user);
+
       const anticipo = manager.create(Anticipo, {
         ...createAnticipoDto,
-        liquidacion
-      })
-  
-      const saved = await manager.save(Anticipo, anticipo)
-      await this.liquidacionesService.recalcularTotales( liquidacion.id, user, manager )
-      await this.liquidacionesService.pasarARevisionSiBorradorConManager(manager, liquidacion.id, user)
-      return saved
-    })
+        liquidacion,
+      });
 
+      const saved = await manager.save(Anticipo, anticipo);
+      await this.liquidacionesService.recalcularTotales(
+        liquidacion.id,
+        user,
+        manager,
+      );
+      await this.liquidacionesService.pasarARevisionSiBorradorConManager(
+        manager,
+        liquidacion.id,
+        user,
+      );
+      return saved;
+    });
   }
 
-  async findByLiquidacion(liquidacionId: number): Promise<{ anticipos: Anticipo[], total: number }> {
+  async findByLiquidacion(
+    liquidacionId: number,
+  ): Promise<{ anticipos: Anticipo[]; total: number }> {
     const [anticipos, total] = await this.anticiposRepoitory.findAndCount({
-      where: { liquidacion: { id: liquidacionId} },
-      order: { id: 'ASC'}
-    })
+      where: { liquidacion: { id: liquidacionId } },
+      order: { id: 'ASC' },
+    });
 
-    return { anticipos, total }
+    return { anticipos, total };
   }
 
   async findOne(id: number) {
     const anticipo = await this.anticiposRepoitory.findOne({
       where: { id },
-      relations: { liquidacion: true }
+      relations: { liquidacion: true },
     });
 
-    if(!anticipo) throw new NotFoundException(`El anticipo con el ID: ${id} no fue encontrado`);
+    if (!anticipo)
+      throw new NotFoundException(
+        `El anticipo con el ID: ${id} no fue encontrado`,
+      );
 
-    return anticipo
+    return anticipo;
   }
 
   async update(id: number, updateAnticipoDto: UpdateAnticipoDto, user: User) {
-    
-    return await this.dataSource.transaction(async manager => {
-      
+    return await this.dataSource.transaction(async (manager) => {
       const anticipo = await manager.findOne(Anticipo, {
         where: { id },
-        relations: ['liquidacion']
+        relations: ['liquidacion'],
       });
 
-      if(!anticipo) throw new NotFoundException(`El anticipo no fue encontrado`)
-      
+      if (!anticipo)
+        throw new NotFoundException(`El anticipo no fue encontrado`);
+
       validarBloqueoEdicion(anticipo.liquidacion, user);
-      
+
       Object.assign(anticipo, {
         ...updateAnticipoDto,
-        tipo: updateAnticipoDto.tipo as AnticipoTipo
-      })
+        tipo: updateAnticipoDto.tipo as AnticipoTipo,
+      });
 
       const liquidacionId = anticipo.liquidacion.id;
-      const saved = await manager.save(Anticipo, anticipo)
-      await this.liquidacionesService.recalcularTotales( liquidacionId, user, manager );
-      return saved
-    })
-
+      const saved = await manager.save(Anticipo, anticipo);
+      await this.liquidacionesService.recalcularTotales(
+        liquidacionId,
+        user,
+        manager,
+      );
+      return saved;
+    });
   }
 
   async remove(id: number, user: User) {
-    
-    return await this.dataSource.transaction(async manager => {
-      
+    return await this.dataSource.transaction(async (manager) => {
       const anticipo = await manager.findOne(Anticipo, {
         where: { id },
-        relations: ['liquidacion']
-      })
+        relations: ['liquidacion'],
+      });
 
-      if(!anticipo) throw new NotFoundException(`El anticipo no fue encontrado`)
+      if (!anticipo)
+        throw new NotFoundException(`El anticipo no fue encontrado`);
 
       validarBloqueoEdicion(anticipo.liquidacion, user);
 
       const liquidacionId = anticipo.liquidacion.id;
 
-      await manager.remove(Anticipo, anticipo)
-      await this.liquidacionesService.recalcularTotales(liquidacionId, user, manager);
-      return { manager: "Anticipo eliminado correctamente" }
-    })
+      await manager.remove(Anticipo, anticipo);
+      await this.liquidacionesService.recalcularTotales(
+        liquidacionId,
+        user,
+        manager,
+      );
+      return { manager: 'Anticipo eliminado correctamente' };
+    });
   }
 }

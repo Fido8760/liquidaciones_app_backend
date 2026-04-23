@@ -2,7 +2,10 @@ import { IsDateString, IsNumberString, IsOptional } from 'class-validator';
 
 export class GetProgramacionSalidasQueryDto {
   @IsOptional()
-  @IsDateString({}, { message: 'La fecha inicio debe tener formato YYYY-MM-DD' })
+  @IsDateString(
+    {},
+    { message: 'La fecha inicio debe tener formato YYYY-MM-DD' },
+  )
   fechaInicio?: string;
 
   @IsOptional()

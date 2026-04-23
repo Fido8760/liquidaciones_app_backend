@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+} from '@nestjs/common';
 import { AnticiposService } from './anticipos.service';
 import { CreateAnticipoDto } from './dto/create-anticipo.dto';
 import { UpdateAnticipoDto } from './dto/update-anticipo.dto';
@@ -14,17 +22,12 @@ export class AnticiposController {
 
   @Post()
   @Roles(UserRole.CAPTURISTA, UserRole.SISTEMAS)
-  create(
-    @Body() createAnticipoDto: CreateAnticipoDto,
-    @GetUser() user: User
-  ) {
+  create(@Body() createAnticipoDto: CreateAnticipoDto, @GetUser() user: User) {
     return this.anticiposService.create(createAnticipoDto, user);
   }
 
   @Get()
-  findAll(
-    @Param('liquidacionId', ValidarIdPipe) liquidacionId: string
-  ) {
+  findAll(@Param('liquidacionId', ValidarIdPipe) liquidacionId: string) {
     return this.anticiposService.findByLiquidacion(+liquidacionId);
   }
 
@@ -36,19 +39,16 @@ export class AnticiposController {
   @Put(':id')
   @Roles(UserRole.CAPTURISTA, UserRole.SISTEMAS)
   update(
-    @Param('id', ValidarIdPipe) id: string, 
+    @Param('id', ValidarIdPipe) id: string,
     @Body() updateAnticipoDto: UpdateAnticipoDto,
-    @GetUser() user: User
+    @GetUser() user: User,
   ) {
     return this.anticiposService.update(+id, updateAnticipoDto, user);
   }
 
   @Delete(':id')
   @Roles(UserRole.CAPTURISTA, UserRole.SISTEMAS)
-  remove(
-    @Param('id', ValidarIdPipe) id: string,
-    @GetUser() user: User
-  ) {
+  remove(@Param('id', ValidarIdPipe) id: string, @GetUser() user: User) {
     return this.anticiposService.remove(+id, user);
   }
 }

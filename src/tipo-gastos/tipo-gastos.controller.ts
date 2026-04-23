@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { TipoGastosService } from './tipo-gastos.service';
 import { CreateTipoGastoDto } from './dto/create-tipo-gasto.dto';
 import { UpdateTipoGastoDto } from './dto/update-tipo-gasto.dto';
@@ -35,8 +45,9 @@ export class TipoGastosController {
   @Put(':id')
   @Roles(UserRole.SISTEMAS, UserRole.CAPTURISTA)
   update(
-    @Param('id', ValidarIdPipe) id: string, 
-    @Body() updateTipoGastoDto: UpdateTipoGastoDto) {
+    @Param('id', ValidarIdPipe) id: string,
+    @Body() updateTipoGastoDto: UpdateTipoGastoDto,
+  ) {
     return this.tipoGastosService.update(+id, updateTipoGastoDto);
   }
 

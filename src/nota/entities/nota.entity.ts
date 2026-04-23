@@ -1,24 +1,33 @@
-import { Liquidacion } from "src/liquidaciones/entities/liquidacion.entity";
-import { User } from "src/users/entities/user.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Liquidacion } from 'src/liquidaciones/entities/liquidacion.entity';
+import { User } from 'src/users/entities/user.entity';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('notas')
 export class Nota {
-    @PrimaryGeneratedColumn()
-    id: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column({ type: 'text' })
-    contenido: string;
+  @Column({ type: 'text' })
+  contenido: string;
 
-    @CreateDateColumn()
-    createdAt: Date
+  @CreateDateColumn()
+  createdAt: Date;
 
-    @ManyToOne(() => User, (user) => user.notas, { eager: false })
-    usuario: User;
+  @ManyToOne(() => User, (user) => user.notas, { eager: false })
+  usuario: User;
 
-    @ManyToOne(() => Liquidacion, (liquidacion) => liquidacion.notas, { onDelete: 'CASCADE'})
-    liquidacion: Liquidacion;
+  @ManyToOne(() => Liquidacion, (liquidacion) => liquidacion.notas, {
+    onDelete: 'CASCADE',
+  })
+  liquidacion: Liquidacion;
 
-    @DeleteDateColumn()
-    deletedAt: Date;
+  @DeleteDateColumn()
+  deletedAt: Date;
 }

@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDto } from '../auth/dto/login.dto'
+import { LoginDto } from '../auth/dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ValidateTokenDto } from './dto/validate-token.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
@@ -15,33 +15,32 @@ export class AuthController {
   @Public()
   @Post('login')
   loginUser(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto)
+    return this.authService.login(loginDto);
   }
 
   @Public()
   @Post('forgot-password')
   forgotPass(@Body() forgotPasswordDto: ForgotPasswordDto) {
-    return this.authService.forgotPass(forgotPasswordDto)
-  
+    return this.authService.forgotPass(forgotPasswordDto);
   }
 
   @Public()
   @Post('validate-token')
   validateToken(@Body() validateTokenDto: ValidateTokenDto) {
-    return this.authService.validateToken(validateTokenDto)
+    return this.authService.validateToken(validateTokenDto);
   }
 
   @Public()
   @Post('reset-password/:token')
   resetPasswordWithToken(
     @Param('token') token: string,
-    @Body() resetPassword: ResetPasswordDto) {
-    return this.authService.resetPassword(token, resetPassword)
+    @Body() resetPassword: ResetPasswordDto,
+  ) {
+    return this.authService.resetPassword(token, resetPassword);
   }
-  
+
   @Get('user')
   getUser(@GetUser() user: User) {
     return user;
   }
-
 }

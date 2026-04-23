@@ -1,7 +1,7 @@
-import { IsNumber, Min } from "class-validator";
+import { IsNumber, Min } from 'class-validator';
 
 export class ModificarTotalDto {
-    @IsNumber()
-    @Min(0, { message: 'El total no puede ser negativo'})
-    total_neto_pagar: number
+  @IsNumber()
+  @Min(0, { message: 'El total no puede ser negativo' })
+  total_neto_pagar: number;
 }

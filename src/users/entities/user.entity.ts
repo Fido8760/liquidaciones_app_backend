@@ -1,4 +1,13 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { UserRole } from '../enums/roles-usuarios.enum';
 import { Liquidacion } from 'src/liquidaciones/entities/liquidacion.entity';
 import { Nota } from 'src/nota/entities/nota.entity';
@@ -6,75 +15,81 @@ import { ProgramacionSalida } from 'src/programacion-salidas/entities/programaci
 
 @Entity('usuarios_liquidacion')
 export class User {
-    @PrimaryGeneratedColumn()
-    id: number;
-    
-    @Column({ type: 'varchar', length: 50 })
-    nombre: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column({ type: 'varchar', length: 50 })
-    apellido: string;
+  @Column({ type: 'varchar', length: 50 })
+  nombre: string;
 
-    @Column({ type: 'varchar', length: 100, unique: true })
-    email: string;
+  @Column({ type: 'varchar', length: 50 })
+  apellido: string;
 
-    @Column({ type: 'varchar', length: 60 })
-    password: string;
+  @Column({ type: 'varchar', length: 100, unique: true })
+  email: string;
 
-    @Column({ type: 'varchar', length: 6, nullable: true })
-    token: string | null;
+  @Column({ type: 'varchar', length: 60 })
+  password: string;
 
-    @Column({ type: 'enum', enum: UserRole, default: UserRole.CAPTURISTA })
-    rol: UserRole;
+  @Column({ type: 'varchar', length: 6, nullable: true })
+  token: string | null;
 
-    @Column({ type: 'simple-array', nullable: true })
-    permisos_especiales: string[];
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.CAPTURISTA })
+  rol: UserRole;
 
-    @Column({ type: 'boolean', default: true })
-    activo: boolean;
+  @Column({ type: 'simple-array', nullable: true })
+  permisos_especiales: string[];
 
-    @CreateDateColumn({ type: 'timestamp' })
-    createdAt: Date;
+  @Column({ type: 'boolean', default: true })
+  activo: boolean;
 
-    @UpdateDateColumn({ type: 'timestamp' })
-    updatedAt: Date;
+  @CreateDateColumn({ type: 'timestamp' })
+  createdAt: Date;
 
-    @OneToMany(() => Liquidacion, (liquidacion) => liquidacion.usuario_creador)
-    liquidaciones_creadas: Liquidacion[];
+  @UpdateDateColumn({ type: 'timestamp' })
+  updatedAt: Date;
 
-    @OneToMany(() => Liquidacion, (liquidacion) => liquidacion.usuario_editor)
-    liquidaciones_editadas: Liquidacion[];
+  @OneToMany(() => Liquidacion, (liquidacion) => liquidacion.usuario_creador)
+  liquidaciones_creadas: Liquidacion[];
 
-    @OneToMany(() => Liquidacion, (liquidacion) => liquidacion.usuario_aprobador)
-    liquidaciones_aprobadas: Liquidacion[];
+  @OneToMany(() => Liquidacion, (liquidacion) => liquidacion.usuario_editor)
+  liquidaciones_editadas: Liquidacion[];
 
-    @OneToMany(() => Liquidacion, (liquidacion) => liquidacion.usuario_pagador)
-    liquidaciones_pagadas: Liquidacion[];
+  @OneToMany(() => Liquidacion, (liquidacion) => liquidacion.usuario_aprobador)
+  liquidaciones_aprobadas: Liquidacion[];
 
-    @OneToMany(() => Liquidacion, (liquidacion) => liquidacion.usuario_modificador_comision)
-    liquidaciones_modificadas_comision: Liquidacion[];
+  @OneToMany(() => Liquidacion, (liquidacion) => liquidacion.usuario_pagador)
+  liquidaciones_pagadas: Liquidacion[];
 
-    @OneToMany(() => Liquidacion, (liquidacion) => liquidacion.usuario_modificador_total)
-    liquidaciones_modificadas_total: Liquidacion[];
+  @OneToMany(
+    () => Liquidacion,
+    (liquidacion) => liquidacion.usuario_modificador_comision,
+  )
+  liquidaciones_modificadas_comision: Liquidacion[];
 
-    @OneToMany(() => Nota, (nota) => nota.usuario)
-    notas: Nota[];
+  @OneToMany(
+    () => Liquidacion,
+    (liquidacion) => liquidacion.usuario_modificador_total,
+  )
+  liquidaciones_modificadas_total: Liquidacion[];
 
-    @ManyToOne(() => User, { nullable: true })
-    createdBy: User;
+  @OneToMany(() => Nota, (nota) => nota.usuario)
+  notas: Nota[];
 
-    @ManyToOne(() => User, { nullable: true })
-    updatedBy: User;
+  @ManyToOne(() => User, { nullable: true })
+  createdBy: User;
 
-    @ManyToOne(() => User, { nullable: true })
-    deletedBy: User;
+  @ManyToOne(() => User, { nullable: true })
+  updatedBy: User;
 
-    @DeleteDateColumn()
-    deletedAt: Date;
+  @ManyToOne(() => User, { nullable: true })
+  deletedBy: User;
 
-    @OneToMany(() => ProgramacionSalida, (ps) => ps.creadoPor)
-    programaciones_creadas: ProgramacionSalida[];
+  @DeleteDateColumn()
+  deletedAt: Date;
 
-    @OneToMany(() => ProgramacionSalida, (ps) => ps.modificadoPor)
-    programaciones_modificadas: ProgramacionSalida[];
+  @OneToMany(() => ProgramacionSalida, (ps) => ps.creadoPor)
+  programaciones_creadas: ProgramacionSalida[];
+
+  @OneToMany(() => ProgramacionSalida, (ps) => ps.modificadoPor)
+  programaciones_modificadas: ProgramacionSalida[];
 }

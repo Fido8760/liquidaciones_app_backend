@@ -9,6 +9,6 @@ import { Liquidacion } from 'src/liquidaciones/entities/liquidacion.entity';
   imports: [TypeOrmModule.forFeature([User, Liquidacion])],
   controllers: [UsersController],
   providers: [UsersService],
-  exports: [UsersService]
+  exports: [UsersService],
 })
 export class UsersModule {}

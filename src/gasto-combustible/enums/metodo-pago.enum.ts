@@ -1,4 +1,4 @@
 export enum MetodoPago {
-    EFECTIVO = 'EFECTIVO',
-    TARJETA = 'TARJETA'
+  EFECTIVO = 'EFECTIVO',
+  TARJETA = 'TARJETA',
 }

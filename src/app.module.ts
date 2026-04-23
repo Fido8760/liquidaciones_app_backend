@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config'
-import { TypeOrmModule } from '@nestjs/typeorm'
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LiquidacionesModule } from './liquidaciones/liquidaciones.module';
@@ -28,11 +28,11 @@ import { ProgramacionSalidasModule } from './programacion-salidas/programacion-s
     ThrottlerModule.forRoot([
       {
         ttl: 60,
-        limit: 10
-      }
+        limit: 10,
+      },
     ]),
     ConfigModule.forRoot({
-      isGlobal: true
+      isGlobal: true,
     }),
     TypeOrmModule.forRootAsync({
       useFactory: typeOrmConfig,
@@ -51,18 +51,19 @@ import { ProgramacionSalidasModule } from './programacion-salidas/programacion-s
     NotaModule,
     GastosModule,
     TipoGastosModule,
-    ProgramacionSalidasModule
+    ProgramacionSalidasModule,
   ],
   controllers: [AppController],
   providers: [
-    AppService, {
+    AppService,
+    {
       provide: APP_GUARD,
-      useClass: JwtAuthGuard
+      useClass: JwtAuthGuard,
     },
     {
       provide: APP_GUARD,
-      useClass: RolesGuard
-    }
+      useClass: RolesGuard,
+    },
   ],
 })
 export class AppModule {}

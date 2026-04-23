@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ProgramacionSalidasService } from './programacion-salidas.service';
 import { CreateProgramacionSalidaDto } from './dto/create-programacion-salida.dto';
 import { UpdateProgramacionSalidaDto } from './dto/update-programacion-salida.dto';
@@ -14,22 +24,27 @@ import { GetSalidaDiaQueryDto } from './dto/programacion-dia.dto';
 
 @Controller('programacion-salidas')
 export class ProgramacionSalidasController {
-  constructor(private readonly programacionSalidasService: ProgramacionSalidasService) {}
+  constructor(
+    private readonly programacionSalidasService: ProgramacionSalidasService,
+  ) {}
 
   @Post()
   @Roles(UserRole.VENTAS, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.SISTEMAS)
   create(
     @Body() createProgramacionSalidaDto: CreateProgramacionSalidaDto,
-    @GetUser() user: User
+    @GetUser() user: User,
   ) {
-    return this.programacionSalidasService.create(createProgramacionSalidaDto, user);
+    return this.programacionSalidasService.create(
+      createProgramacionSalidaDto,
+      user,
+    );
   }
 
   @Get()
   @Roles(UserRole.ADMIN, UserRole.DIRECTOR, UserRole.SISTEMAS, UserRole.VENTAS)
   findAll(
     @GetUser() user: User,
-    @Query() query: GetProgramacionSalidasQueryDto
+    @Query() query: GetProgramacionSalidasQueryDto,
   ) {
     const take = query.limit ? +query.limit : 10;
     const page = query.page ? +query.page : 1;
@@ -40,14 +55,13 @@ export class ProgramacionSalidasController {
       fechaFin: query.fechaFin,
       take,
       skip,
-      page
+      page,
     });
   }
 
-  
   @Get('dia')
   @Roles(UserRole.ADMIN, UserRole.DIRECTOR, UserRole.SISTEMAS, UserRole.VENTAS)
-  findHoy(@Query() query: GetSalidaDiaQueryDto){
+  findHoy(@Query() query: GetSalidaDiaQueryDto) {
     return this.programacionSalidasService.findDia(query.fecha);
   }
 
@@ -55,7 +69,7 @@ export class ProgramacionSalidasController {
   @Roles(UserRole.ADMIN, UserRole.DIRECTOR, UserRole.SISTEMAS)
   getStats(
     @GetUser() user: User,
-    @Query() query: GetProgramacionSalidasQueryDto
+    @Query() query: GetProgramacionSalidasQueryDto,
   ) {
     return this.programacionSalidasService.getStats(user, {
       fechaInicio: query.fechaInicio,
@@ -65,27 +79,27 @@ export class ProgramacionSalidasController {
 
   @Get(':id')
   @Roles(UserRole.ADMIN, UserRole.DIRECTOR, UserRole.SISTEMAS, UserRole.VENTAS)
-  findOne(
-    @Param('id', ValidarIdPipe) id: string) {
+  findOne(@Param('id', ValidarIdPipe) id: string) {
     return this.programacionSalidasService.findOne(+id);
   }
 
   @Put(':id')
   @Roles(UserRole.ADMIN, UserRole.DIRECTOR, UserRole.SISTEMAS, UserRole.VENTAS)
   update(
-    @Param('id', ValidarIdPipe) id: string, 
+    @Param('id', ValidarIdPipe) id: string,
     @Body() updateProgramacionSalidaDto: UpdateProgramacionSalidaDto,
-    @GetUser() user: User
+    @GetUser() user: User,
   ) {
-    return this.programacionSalidasService.update(+id, updateProgramacionSalidaDto, user);
+    return this.programacionSalidasService.update(
+      +id,
+      updateProgramacionSalidaDto,
+      user,
+    );
   }
 
   @Delete(':id')
   @Roles(UserRole.SISTEMAS)
-  remove(
-    @Param('id', ValidarIdPipe) id: string,
-    @GetUser() user: User
-  ) {
+  remove(@Param('id', ValidarIdPipe) id: string, @GetUser() user: User) {
     return this.programacionSalidasService.remove(+id, user);
   }
 
@@ -96,16 +110,24 @@ export class ProgramacionSalidasController {
     @Body() cancelarProgramacionSalidaDto: CancelarProgramacionSalidaDto,
     @GetUser() user: User,
   ) {
-    return this.programacionSalidasService.cancelar(+id, cancelarProgramacionSalidaDto, user)
+    return this.programacionSalidasService.cancelar(
+      +id,
+      cancelarProgramacionSalidaDto,
+      user,
+    );
   }
 
-@Patch(':id/estatus')
-@Roles(UserRole.ADMIN, UserRole.DIRECTOR, UserRole.SISTEMAS, UserRole.VENTAS)
-cambiarEstatus(
+  @Patch(':id/estatus')
+  @Roles(UserRole.ADMIN, UserRole.DIRECTOR, UserRole.SISTEMAS, UserRole.VENTAS)
+  cambiarEstatus(
     @Param('id', ValidarIdPipe) id: string,
     @Body() cambiarEstatusDto: CambiarEstatusDto,
     @GetUser() user: User,
-) {
-    return this.programacionSalidasService.cambiarEstatus(+id, cambiarEstatusDto, user);
-}
+  ) {
+    return this.programacionSalidasService.cambiarEstatus(
+      +id,
+      cambiarEstatusDto,
+      user,
+    );
+  }
 }

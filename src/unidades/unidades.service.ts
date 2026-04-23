@@ -3,32 +3,29 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Unidad } from 'src/database/entities/unidad.entity';
 import { Repository } from 'typeorm';
 
-
 @Injectable()
 export class UnidadesService {
-
   constructor(
-    @InjectRepository(Unidad) private readonly unidadesRepository : Repository<Unidad>
+    @InjectRepository(Unidad)
+    private readonly unidadesRepository: Repository<Unidad>,
   ) {}
-  
 
   async findAll() {
-    const [ unidades, total ] = await this.unidadesRepository.findAndCount({
+    const [unidades, total] = await this.unidadesRepository.findAndCount({
       where: {
-        activo: true
+        activo: true,
       },
       order: {
-        no_unidad: 'ASC'
-      }
-    })
+        no_unidad: 'ASC',
+      },
+    });
     return {
       unidades,
-      total
-    }
+      total,
+    };
   }
 
   findOne(id: number) {
     return `This action returns a #${id} unidade`;
   }
-
 }

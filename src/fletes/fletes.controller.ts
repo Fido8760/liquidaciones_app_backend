@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+} from '@nestjs/common';
 import { FletesService } from './fletes.service';
 import { CreateFleteDto } from './dto/create-flete.dto';
 import { UpdateFleteDto } from './dto/update-flete.dto';
@@ -14,15 +22,14 @@ export class FletesController {
 
   @Post()
   @Roles(UserRole.CAPTURISTA, UserRole.SISTEMAS)
-  create(
-    @Body() createFleteDto: CreateFleteDto,
-    @GetUser() user: User
-  ) {
+  create(@Body() createFleteDto: CreateFleteDto, @GetUser() user: User) {
     return this.fletesService.create(createFleteDto, user);
   }
 
   @Get()
-  findByLiquidacion(@Param('liquidacionId', ValidarIdPipe) liquidacionId: string) {
+  findByLiquidacion(
+    @Param('liquidacionId', ValidarIdPipe) liquidacionId: string,
+  ) {
     return this.fletesService.findByLiquidacion(+liquidacionId);
   }
 
@@ -34,19 +41,16 @@ export class FletesController {
   @Put(':id')
   @Roles(UserRole.CAPTURISTA, UserRole.SISTEMAS)
   update(
-    @Param('id', ValidarIdPipe) id: string, 
+    @Param('id', ValidarIdPipe) id: string,
     @Body() updateFleteDto: UpdateFleteDto,
-    @GetUser() user: User
+    @GetUser() user: User,
   ) {
     return this.fletesService.update(+id, updateFleteDto, user);
   }
 
   @Delete(':id')
   @Roles(UserRole.CAPTURISTA, UserRole.SISTEMAS)
-  remove(
-    @Param('id', ValidarIdPipe) id: string, 
-    @GetUser() user: User
-  ) {
+  remove(@Param('id', ValidarIdPipe) id: string, @GetUser() user: User) {
     return this.fletesService.remove(+id, user);
   }
 }
