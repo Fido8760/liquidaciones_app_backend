@@ -21,6 +21,7 @@ import { CambiarEstatusDto } from './dto/cambiar-estatus.dto';
 import { GetProgramacionSalidasQueryDto } from './dto/get-programacion-salidas.dto';
 import { CancelarProgramacionSalidaDto } from './dto/cancelar-programacion-salida.dto';
 import { GetSalidaDiaQueryDto } from './dto/programacion-dia.dto';
+import { AsignarUnidadDto } from './dto/asignar-unidad.dto';
 
 @Controller('programacion-salidas')
 export class ProgramacionSalidasController {
@@ -129,5 +130,15 @@ export class ProgramacionSalidasController {
       cambiarEstatusDto,
       user,
     );
+  }
+
+  @Patch(':id/asignar-unidad')
+  @Roles(UserRole.ADMIN, UserRole.DIRECTOR, UserRole.SISTEMAS)
+  asignarUnidad(
+    @Param('id', ValidarIdPipe) id: string,
+    @Body() dto: AsignarUnidadDto,
+    @GetUser() user: User,
+  ) {
+    return this.programacionSalidasService.asignarUnidad(+id, dto, user);
   }
 }

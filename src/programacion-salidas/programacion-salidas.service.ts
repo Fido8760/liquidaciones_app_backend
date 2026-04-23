@@ -14,6 +14,7 @@ import { EstatusSalida } from './enum/estatus-salida.enum';
 import { UserRole } from 'src/users/enums/roles-usuarios.enum';
 import { CambiarEstatusDto } from './dto/cambiar-estatus.dto';
 import { CancelarProgramacionSalidaDto } from './dto/cancelar-programacion-salida.dto';
+import { AsignarUnidadDto } from './dto/asignar-unidad.dto';
 
 type FiltrosProgramacion = {
   fechaInicio?: string;
@@ -45,20 +46,8 @@ export class ProgramacionSalidasService {
     return this.repostorioProgramacion.save(salida);
   }
 
-  async findAll(
-    user: User,
-    filtros?: FiltrosProgramacion & {
-      take?: number;
-      skip?: number;
-      page?: number;
-    },
-  ): Promise<{
-    salidas: ProgramacionSalida[];
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  }> {
+  async findAll( user: User, filtros?: FiltrosProgramacion & { take?: number; skip?: number; page?: number; },): Promise<{ salidas: ProgramacionSalida[]; total: number; page: number; limit: number; totalPages: number; }> {
+    
     const take = filtros?.take ?? 10;
     const skip = filtros?.skip ?? 0;
     const page = filtros?.page ?? 1;
@@ -124,10 +113,7 @@ export class ProgramacionSalidasService {
     const realizadas = Number(totals?.realizadas) || 0;
     const asignados = Number(totals?.asignados) || 0;
     const canceladas = Number(totals?.canceladas) || 0;
-    const cumplimiento =
-      totalSalidas > 0
-        ? Number(((realizadas / totalSalidas) * 100).toFixed(2))
-        : 0;
+    const cumplimiento = totalSalidas > 0 ? Number(((realizadas / totalSalidas) * 100).toFixed(2)) : 0;
 
     return {
       total_salidas: totalSalidas,
@@ -195,13 +181,25 @@ export class ProgramacionSalidasService {
 
     const { unidadId, ...resto } = updateProgramacionSalidaDto;
 
-    if (unidadId) {
-      if(user.rol === UserRole.VENTAS) {
-        throw new ForbiddenException('No tiene permisos para asignar unidades')
-      }
+    if (
+      user.rol === UserRole.VENTAS &&
+      unidadId !== undefined &&
+      unidadId !== salida.unidad?.id
+    ) {
+      throw new ForbiddenException(
+        'Ventas no puede modificar la unidad'
+      );
+    }
+
+    if (unidadId !== undefined && unidadId !== salida.unidad?.id) {
       const unidad = await this.unidadRepositorio.findOneBy({ id: unidadId });
-      if (!unidad) throw new NotFoundException('Unidad no encontrada');
+
+      if (!unidad) {
+        throw new NotFoundException('Unidad no encontrada');
+      }
+
       salida.unidad = unidad;
+
       if (salida.estatus === EstatusSalida.SIN_ASIGNAR) {
         salida.estatus = EstatusSalida.ASIGNADO;
       }
@@ -270,11 +268,7 @@ export class ProgramacionSalidasService {
     });
   }
 
-  async cancelar(
-    id: number,
-    dto: CancelarProgramacionSalidaDto,
-    user: User,
-  ): Promise<ProgramacionSalida> {
+  async cancelar( id: number, dto: CancelarProgramacionSalidaDto, user: User, ): Promise<ProgramacionSalida> {
     const salida = await this.findOne(id);
     this.validarPermisoModificacion(salida, user);
 
@@ -285,11 +279,7 @@ export class ProgramacionSalidasService {
     return this.repostorioProgramacion.save(salida);
   }
 
-  async cambiarEstatus(
-    id: number,
-    dto: CambiarEstatusDto,
-    user: User,
-  ): Promise<ProgramacionSalida> {
+  async cambiarEstatus( id: number, dto: CambiarEstatusDto, user: User, ): Promise<ProgramacionSalida> {
     if (dto.estatus === EstatusSalida.CANCELADO) {
       throw new ForbiddenException(
         'Para cancelar una salida debes indicar el motivo de cancelación',
@@ -301,6 +291,29 @@ export class ProgramacionSalidasService {
 
     salida.estatus = dto.estatus;
     salida.motivo_cancelacion = null;
+    salida.modificadoPor = user;
+
+    return this.repostorioProgramacion.save(salida);
+  }
+
+  async asignarUnidad( id: number, dto: AsignarUnidadDto, user: User ): Promise<ProgramacionSalida> {
+    const salida = await this.findOne(id);
+    this.validarPermisoModificacion(salida, user);
+
+    const unidad = await this.unidadRepositorio.findOneBy({
+      id: dto.unidadId
+    });
+
+    if(!unidad) {
+      throw new NotFoundException('Unidad no encontrada');
+    }
+
+    salida.unidad = unidad;
+
+    if(salida.estatus === EstatusSalida.SIN_ASIGNAR) {
+      salida.estatus = EstatusSalida.ASIGNADO;
+    }
+
     salida.modificadoPor = user;
 
     return this.repostorioProgramacion.save(salida);
