@@ -2,9 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { join } from 'path';
 
-export const typeOrmConfig = (
-  configService: ConfigService,
-): TypeOrmModuleOptions => ({
+export const typeOrmConfig = ( configService: ConfigService, ): TypeOrmModuleOptions => ({
   type: 'mysql',
   host: configService.get('DATABASE_HOST'),
   username: configService.get('DATABASE_USER'),
@@ -14,4 +12,5 @@ export const typeOrmConfig = (
   logging: false,
   entities: [join(__dirname + '../../**/*.entity.{js,ts}')],
   synchronize: false,
+  timezone: 'local'
 });
