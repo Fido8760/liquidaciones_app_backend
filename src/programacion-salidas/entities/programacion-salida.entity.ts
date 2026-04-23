@@ -1,5 +1,7 @@
 import { Unidad } from 'src/database/entities/unidad.entity';
 import {
+  BeforeInsert,
+  BeforeUpdate,
   Column,
   CreateDateColumn,
   Entity,
@@ -70,4 +72,11 @@ export class ProgramacionSalida {
 
   @UpdateDateColumn({ type: 'timestamp' })
   updatedAt: Date;
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  normalizeStrings() {
+    if (this.cliente) this.cliente = this.cliente.toUpperCase();
+    if (this.destino) this.destino = this.destino.toUpperCase();
+  }
 }

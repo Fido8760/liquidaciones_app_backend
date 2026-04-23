@@ -23,16 +23,11 @@ type FiltrosProgramacion = {
 @Injectable()
 export class ProgramacionSalidasService {
   constructor(
-    @InjectRepository(ProgramacionSalida)
-    private readonly repostorioProgramacion: Repository<ProgramacionSalida>,
-    @InjectRepository(Unidad)
-    private readonly unidadRepositorio: Repository<Unidad>,
+    @InjectRepository(ProgramacionSalida) private readonly repostorioProgramacion: Repository<ProgramacionSalida>,
+    @InjectRepository(Unidad) private readonly unidadRepositorio: Repository<Unidad>,
   ) {}
 
-  async create(
-    createProgramacionSalidaDto: CreateProgramacionSalidaDto,
-    user: User,
-  ): Promise<ProgramacionSalida> {
+  async create( createProgramacionSalidaDto: CreateProgramacionSalidaDto, user: User, ): Promise<ProgramacionSalida> {
     let unidad: Unidad | null = null;
     if (createProgramacionSalidaDto.unidadId) {
       unidad = await this.unidadRepositorio.findOneBy({
@@ -194,17 +189,16 @@ export class ProgramacionSalidasService {
     return salida;
   }
 
-  async update(
-    id: number,
-    updateProgramacionSalidaDto: UpdateProgramacionSalidaDto,
-    user: User,
-  ): Promise<ProgramacionSalida> {
+  async update( id: number, updateProgramacionSalidaDto: UpdateProgramacionSalidaDto, user: User, ): Promise<ProgramacionSalida> {
     const salida = await this.findOne(id);
     this.validarPermisoModificacion(salida, user);
 
     const { unidadId, ...resto } = updateProgramacionSalidaDto;
 
     if (unidadId) {
+      if(user.rol === UserRole.VENTAS) {
+        throw new ForbiddenException('No tiene permisos para asignar unidades')
+      }
       const unidad = await this.unidadRepositorio.findOneBy({ id: unidadId });
       if (!unidad) throw new NotFoundException('Unidad no encontrada');
       salida.unidad = unidad;
