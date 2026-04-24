@@ -26,12 +26,6 @@ export class FletesController {
     return this.fletesService.create(createFleteDto, user);
   }
 
-  @Get()
-  findByLiquidacion(
-    @Param('liquidacionId', ValidarIdPipe) liquidacionId: string,
-  ) {
-    return this.fletesService.findByLiquidacion(+liquidacionId);
-  }
 
   @Get(':id')
   findOne(@Param('id', ValidarIdPipe) id: string) {

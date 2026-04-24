@@ -1,18 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Put,
-  UseInterceptors,
-  UploadedFile,
-  ParseFilePipe,
-  FileTypeValidator,
-  MaxFileSizeValidator,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, ParseFilePipe, FileTypeValidator, MaxFileSizeValidator, } from '@nestjs/common';
 import { GastosService } from './gastos.service';
 import { CreateGastoDto } from './dto/create-gasto.dto';
 import { UpdateGastoDto } from './dto/update-gasto.dto';
@@ -48,6 +34,7 @@ export class GastosController {
   }
 
   @Get('liquidacion/:liquidacionId')
+  @Roles(UserRole.ADMIN, UserRole.CAPTURISTA, UserRole.DIRECTOR, UserRole.SISTEMAS)
   findByLiquidacion(
     @Param('liquidacionId', ValidarIdPipe) liquidacionId: string,
   ) {
@@ -55,6 +42,7 @@ export class GastosController {
   }
 
   @Get(':id')
+  @Roles(UserRole.ADMIN, UserRole.CAPTURISTA, UserRole.DIRECTOR, UserRole.SISTEMAS)
   findOne(@Param('id') id: string) {
     return this.gastosService.findOne(+id);
   }

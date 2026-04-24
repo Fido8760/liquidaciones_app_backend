@@ -57,16 +57,7 @@ export class FletesService {
     });
   }
 
-  async findByLiquidacion(
-    liquidacionId: Liquidacion['id'],
-  ): Promise<{ fletes: Flete[]; total: number }> {
-    const [fletes, total] = await this.fleteRepository.findAndCount({
-      where: { liquidacion: { id: liquidacionId } },
-      order: { id: 'ASC' },
-    });
 
-    return { fletes, total };
-  }
 
   async findOne(id: number) {
     const flete = await this.fleteRepository.findOne({

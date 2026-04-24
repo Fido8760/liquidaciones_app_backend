@@ -26,10 +26,6 @@ export class AnticiposController {
     return this.anticiposService.create(createAnticipoDto, user);
   }
 
-  @Get()
-  findAll(@Param('liquidacionId', ValidarIdPipe) liquidacionId: string) {
-    return this.anticiposService.findByLiquidacion(+liquidacionId);
-  }
 
   @Get(':id')
   findOne(@Param('id', ValidarIdPipe) id: string) {

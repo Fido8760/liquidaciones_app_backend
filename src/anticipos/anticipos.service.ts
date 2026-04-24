@@ -55,17 +55,6 @@ export class AnticiposService {
     });
   }
 
-  async findByLiquidacion(
-    liquidacionId: number,
-  ): Promise<{ anticipos: Anticipo[]; total: number }> {
-    const [anticipos, total] = await this.anticiposRepoitory.findAndCount({
-      where: { liquidacion: { id: liquidacionId } },
-      order: { id: 'ASC' },
-    });
-
-    return { anticipos, total };
-  }
-
   async findOne(id: number) {
     const anticipo = await this.anticiposRepoitory.findOne({
       where: { id },
