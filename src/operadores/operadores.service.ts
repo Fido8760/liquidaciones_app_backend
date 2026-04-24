@@ -89,16 +89,50 @@ export class OperadoresService {
 
     const unidades = await unidadesQb.getRawMany();
 
+    const tiposUnidadQb = this.liquidacionesRepository
+      .createQueryBuilder('l')
+      .leftJoin('l.unidad', 'unidad')
+      .select([
+        'unidad.tipo_unidad AS tipo_unidad',
+        'COUNT(l.id) AS total_viajes',
+        'AVG(l.rendimiento_real) AS rendimiento_real_promedio',
+        'AVG(l.rendimiento_tabulado) AS rendimiento_tabulado_promedio',
+        'AVG(l.rendimiento_real - l.rendimiento_tabulado) AS diferencia_promedio',
+        'SUM(l.kilometros_recorridos) AS kilometros_totales',
+      ])
+      .where('l.operador = :operadorId', { operadorId })
+      .andWhere('l.estado = :estado', { estado: EstadoLiquidacion.PAGADA })
+      .andWhere('l.deletedAt IS NULL')
+      .groupBy('unidad.tipo_unidad')
+      .orderBy('total_viajes', 'DESC');
+
+    if (fechaInicio) {
+      tiposUnidadQb.andWhere('l.fecha_inicio >= :fechaInicio', { fechaInicio });
+    }
+
+    if (fechaFin) {
+      tiposUnidadQb.andWhere('l.fecha_inicio <= :fechaFin', { fechaFin });
+    }
+
+    const rendimiento_por_tipo_unidad = await tiposUnidadQb.getRawMany();
+
     return {
       total_viajes: Number(kpis.total_viajes) || 0,
       rendimiento_real_promedio: Number(kpis.rendimiento_real_promedio) || 0,
-      rendimiento_tabulado_promedio:
-        Number(kpis.rendimiento_tabulado_promedio) || 0,
-      diferencia_promedio: Number(kpis.diferencia_promedio) || 0,
       comision_total: Number(kpis.comision_total) || 0,
       kilometros_totales: Number(kpis.kilometros_totales) || 0,
       monto_pagado_total: Number(kpis.monto_pagado) || 0,
       unidades,
+      rendimiento_por_tipo_unidad: rendimiento_por_tipo_unidad.map((item) => ({
+        tipo_unidad: item.tipo_unidad,
+        total_viajes: Number(item.total_viajes) || 0,
+        rendimiento_real_promedio:
+          Number(item.rendimiento_real_promedio) || 0,
+        rendimiento_tabulado_promedio:
+          Number(item.rendimiento_tabulado_promedio) || 0,
+        diferencia_promedio: Number(item.diferencia_promedio) || 0,
+        kilometros_totales: Number(item.kilometros_totales) || 0,
+      })),
     };
   }
 
