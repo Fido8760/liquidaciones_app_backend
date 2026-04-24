@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   Put,
-  UseGuards,
 } from '@nestjs/common';
 import { TipoGastosService } from './tipo-gastos.service';
 import { CreateTipoGastoDto } from './dto/create-tipo-gasto.dto';
@@ -52,7 +51,7 @@ export class TipoGastosController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.SISTEMAS, UserRole.CAPTURISTA)
+  @Roles(UserRole.SISTEMAS)
   remove(@Param('id', ValidarIdPipe) id: string) {
     return this.tipoGastosService.remove(+id);
   }
