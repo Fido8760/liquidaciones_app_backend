@@ -1,8 +1,4 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, } from '@nestjs/common';
 import { CreateProgramacionSalidaDto } from './dto/create-programacion-salida.dto';
 import { UpdateProgramacionSalidaDto } from './dto/update-programacion-salida.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -46,8 +42,7 @@ export class ProgramacionSalidasService {
     return this.repostorioProgramacion.save(salida);
   }
 
-  async findAll( user: User, filtros?: FiltrosProgramacion & { take?: number; skip?: number; page?: number; },): Promise<{ salidas: ProgramacionSalida[]; total: number; page: number; limit: number; totalPages: number; }> {
-    
+  async findAll( user: User, filtros?: FiltrosProgramacion & { take?: number; skip?: number; page?: number; }, ): Promise<{ salidas: ProgramacionSalida[]; total: number; page: number; limit: number; totalPages: number; }> {
     const take = filtros?.take ?? 10;
     const skip = filtros?.skip ?? 0;
     const page = filtros?.page ?? 1;
@@ -69,7 +64,7 @@ export class ProgramacionSalidasService {
     const totals = await this.createStatsBaseQuery(filtros)
       .select([
         'COUNT(salida.id) AS total_salidas',
-        `SUM(CASE WHEN salida.estatus = '${EstatusSalida.SIN_ASIGNAR}' THEN 1 ELSE 0 END) AS sin_asignar`, // <--- AGREGAR
+        `SUM(CASE WHEN salida.estatus = '${EstatusSalida.SIN_ASIGNAR}' THEN 1 ELSE 0 END) AS sin_asignar`,
         `SUM(CASE WHEN salida.estatus = '${EstatusSalida.ASIGNADO}' THEN 1 ELSE 0 END) AS asignados`,
         `SUM(CASE WHEN salida.estatus = '${EstatusSalida.SALIO}' THEN 1 ELSE 0 END) AS realizadas`,
         `SUM(CASE WHEN salida.estatus = '${EstatusSalida.CANCELADO}' THEN 1 ELSE 0 END) AS canceladas`,
@@ -170,26 +165,15 @@ export class ProgramacionSalidasService {
         },
       },
     });
-    if (!salida)
-      throw new NotFoundException('Programacion de salida no ecnontrada');
+    if (!salida) throw new NotFoundException('Programacion de salida no encontrada');
     return salida;
   }
 
   async update( id: number, updateProgramacionSalidaDto: UpdateProgramacionSalidaDto, user: User, ): Promise<ProgramacionSalida> {
     const salida = await this.findOne(id);
-    this.validarPermisoModificacion(salida, user);
+    this.validarPermisoModificacion(salida, user, updateProgramacionSalidaDto);
 
     const { unidadId, ...resto } = updateProgramacionSalidaDto;
-
-    if (
-      user.rol === UserRole.VENTAS &&
-      unidadId !== undefined &&
-      unidadId !== salida.unidad?.id
-    ) {
-      throw new ForbiddenException(
-        'Ventas no puede modificar la unidad'
-      );
-    }
 
     if (unidadId !== undefined && unidadId !== salida.unidad?.id) {
       const unidad = await this.unidadRepositorio.findOneBy({ id: unidadId });
@@ -301,22 +285,65 @@ export class ProgramacionSalidasService {
     this.validarPermisoModificacion(salida, user);
 
     const unidad = await this.unidadRepositorio.findOneBy({
-      id: dto.unidadId
+      id: dto.unidadId,
     });
 
-    if(!unidad) {
+    if (!unidad) {
       throw new NotFoundException('Unidad no encontrada');
     }
 
     salida.unidad = unidad;
 
-    if(salida.estatus === EstatusSalida.SIN_ASIGNAR) {
+    if (salida.estatus === EstatusSalida.SIN_ASIGNAR) {
       salida.estatus = EstatusSalida.ASIGNADO;
     }
 
     salida.modificadoPor = user;
 
     return this.repostorioProgramacion.save(salida);
+  }
+
+  // ─── Métodos privados ────────────────────────────────────────────────────────
+
+  private validarPermisoModificacion( salida: ProgramacionSalida, user: User, dto?: UpdateProgramacionSalidaDto, ) {
+    // Sistemas puede absolutamente todo
+    if (user.rol === UserRole.SISTEMAS) return;
+
+    // Bloqueo total — salio y cancelado
+    if ([EstatusSalida.SALIO, EstatusSalida.CANCELADO].includes(salida.estatus)) {
+      throw new ForbiddenException(
+        `No se puede modificar una salida con estatus "${salida.estatus}"`,
+      );
+    }
+
+    // Bloqueo por fecha pasada
+    const fechaSalida = this.formatearFecha(salida.fecha_salida);
+    const hoy = this.obtenerFechaActual();
+
+    if (fechaSalida < hoy) {
+      throw new ForbiddenException(
+        'Solo Sistemas puede modificar viajes programados en el pasado',
+      );
+    }
+
+    // Ventas no puede asignar/reasignar unidad
+    if ( user.rol === UserRole.VENTAS && dto?.unidadId !== undefined && dto.unidadId !== salida.unidad?.id ) {
+      throw new ForbiddenException('Ventas no puede modificar la unidad asignada');
+    }
+
+    // Bloqueo parcial — asignado solo permite cambiar estatus
+    if (salida.estatus === EstatusSalida.ASIGNADO && dto) {
+      const camposPermitidos = ['estatus'];
+      const camposNoPermitidos = Object.keys(dto).filter(
+        (k) => !camposPermitidos.includes(k),
+      );
+
+      if (camposNoPermitidos.length > 0) {
+        throw new ForbiddenException(
+          'Una salida asignada no puede modificarse, si hay un error cancela y crea una nueva programación',
+        );
+      }
+    }
   }
 
   private createHistoricoQueryBuilder(filtros?: FiltrosProgramacion) {
@@ -367,32 +394,12 @@ export class ProgramacionSalidasService {
     return qb;
   }
 
-  private validarPermisoModificacion(salida: ProgramacionSalida, user: User) {
-    if (salida.estatus === EstatusSalida.CANCELADO) {
-      throw new ForbiddenException(
-        'No se puede modificar una salida cancelada',
-      );
-    }
-
-    if (user.rol === UserRole.SISTEMAS) return;
-
-    const fechaSalida = this.formatearFecha(salida.fecha_salida);
-    const hoy = this.obtenerFechaActual();
-
-    if (fechaSalida < hoy) {
-      throw new ForbiddenException(
-        'Solo Sistemas puede modificar viajes programados en el pasado',
-      );
-    }
-  }
-
   private obtenerFechaActual() {
     return this.formatearFecha(new Date());
   }
 
   private formatearFecha(fecha: Date | string): string {
     if (typeof fecha === 'string') {
-      // Si ya es string YYYY-MM-DD lo regresamos directo
       return fecha.split('T')[0];
     }
     const year = fecha.getFullYear();
